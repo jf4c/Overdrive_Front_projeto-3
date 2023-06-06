@@ -1,27 +1,63 @@
 import { useState, useEffect } from "react";
 import axios from "../config/axios.config";
 
-export const useAxios = (url) => {
-    const [data, setData] = useState([]);
+export const useAxios = () => {
+  const [data, setData] = useState([]);
+  const [company, setCompany] = useState({});
+  const [people, setPeople] = useState([]);
 
-    useEffect(() => {
-        axios.get(url).then((res) => {
-            setData(res.data);
-        });
-    }, []);
+  // useEffect(() => {
+  //     axios.get(url).then((res) => {
+  //         setData(res.data);
+  //     });
+  // }, []);
 
-    // const del = (id) => {
-    //     axios.delete(`/v1/Company/${id}`);
-    // };
+  const getData = async (url) => {
+    await axios
+      .get(url)
+      .then((res) => {
+        setData(res.data);
+      })
+      .catch();
+  };
 
-    const CreateCompany = (company) => {
-        axios.post(url, company, {
-            headers: {
-                accept: "text/plain",
-                "Content-Type": "application/json",
-            },
-        });
-    };
+  // const getCompanyByCNPJ = async (url, cnpj) => {
+  //   await axios
+  //     .get(`${url}/${cnpj}`)
+  //     .then((res) => {})
+  //     .catch();
+  // };
 
-    return { data, CreateCompany };
+  const getPeopleInCompany = (url, id) => {
+    axios
+      .get(`${url}/${id}`)
+      .then((res) => {
+        setPeople(res.data.peoples);
+        console.log(res.data.peoples);
+        console.log(people);
+      })
+      .catch();
+  };
+
+  const delById = async (url, id) => {
+    await axios.delete(`${url}/${id}`);
+  };
+
+  const createCompany = async (url, company) => {
+    await axios.post(url, company, {
+      headers: {
+        accept: "text/plain",
+        "Content-Type": "application/json",
+      },
+    });
+  };
+
+  return {
+    data,
+    createCompany,
+    getData,
+    delById,
+    getPeopleInCompany,
+    people,
+  };
 };
