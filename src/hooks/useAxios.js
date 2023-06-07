@@ -6,12 +6,6 @@ export const useAxios = () => {
   const [company, setCompany] = useState({});
   const [people, setPeople] = useState([]);
 
-  // useEffect(() => {
-  //     axios.get(url).then((res) => {
-  //         setData(res.data);
-  //     });
-  // }, []);
-
   const getData = async (url) => {
     await axios
       .get(url)

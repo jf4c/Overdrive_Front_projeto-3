@@ -28,9 +28,17 @@ import {
   PersonData,
   PersonContainer,
 } from "./styles";
+import { useTemplate } from "../../../../hooks/useTemplate";
 
 export default function Table() {
   const { data, getData, delById, getPeopleInCompany, people } = useAxios();
+
+  const {
+    cnpjBodyTemplate,
+    dateBodyTemplate,
+    priceBodyTemplate,
+    statusBodyTemplate,
+  } = useTemplate();
 
   const {
     emptyCompany,
@@ -55,9 +63,6 @@ export default function Table() {
   useEffect(() => {
     getData("Company");
   }, [data]);
-
-  // useEffect(() => {
-  // }, [company]);
 
   const openNew = () => {
     setCompany(emptyCompany);
@@ -116,44 +121,6 @@ export default function Table() {
     });
   };
 
-  const formatCnpj = (cnpj) => {
-    return cnpj.replace(
-      /^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/,
-      "$1.$2.$3/$4-$5"
-    );
-  };
-
-  const formatDate = (date) => {
-    if (date) {
-      return date.split("T")[0].split("-").reverse().join("/");
-    }
-  };
-
-  const formatCurrency = (value) => {
-    if (value) {
-      return value.toLocaleString("pt-RS", {
-        style: "currency",
-        currency: "BRL",
-      });
-    }
-  };
-
-  const priceBodyTemplate = (rowData) => {
-    return formatCurrency(rowData.financeCapital);
-  };
-
-  const dateBodyTemplate = (rowData) => {
-    return formatDate(rowData.openingDate);
-  };
-
-  const cnpjBodyTemplate = (rowData) => {
-    return formatCnpj(rowData.cnpj);
-  };
-
-  const statusBodyTemplate = (rowData) => {
-    return <Tag value={rowData.status} severity={getSeverity(rowData)}></Tag>;
-  };
-
   const actionBodyTemplate = (rowData) => {
     return (
       <Container>
@@ -181,22 +148,6 @@ export default function Table() {
         />
       </Container>
     );
-  };
-
-  const getSeverity = (company) => {
-    switch (company.status) {
-      case "Active":
-        return "success";
-
-      case "Pending":
-        return "warning";
-
-      case "Inactive":
-        return "danger";
-
-      default:
-        return null;
-    }
   };
 
   const header = (
@@ -369,7 +320,7 @@ export default function Table() {
               />
 
               <TextData
-                data={formatCnpj(company.cnpj)}
+                data={cnpjBodyTemplate(company)}
                 name="CNPJ"
                 className="cnpj"
               />
@@ -382,12 +333,12 @@ export default function Table() {
               />
 
               <TextData
-                data={formatDate(company.openingDate)}
+                data={dateBodyTemplate(company)}
                 name="Data de Abertura"
                 className="openingDate"
               />
               <TextData
-                data={formatCurrency(company.financeCapital)}
+                data={priceBodyTemplate(company)}
                 name="Capital Financeiro"
                 className="financeCapital"
               />

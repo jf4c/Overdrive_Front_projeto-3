@@ -24,7 +24,7 @@ export const Data = styled("div", {
 export const Name = styled("label", {
   color: "#EEE",
   fontSize: "1.2rem",
-  background: "$blue",
+  background: "$blue700",
   padding: "0.3rem",
   borderTopLeftRadius: "10px",
   borderTopRightRadius: "10px",
