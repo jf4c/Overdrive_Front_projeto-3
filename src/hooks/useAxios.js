@@ -15,15 +15,26 @@ export const useAxios = () => {
       .catch();
   };
 
-  // const getCompanyByCNPJ = async (url, cnpj) => {
-  //   await axios
-  //     .get(`${url}/${cnpj}`)
-  //     .then((res) => {})
-  //     .catch();
-  // };
+  const createCompany = async (url, company) => {
+    await axios.post(url, company, {
+      headers: {
+        accept: "text/plain",
+        "Content-Type": "application/json",
+      },
+    });
+  };
 
-  const getPeopleInCompany = (url, id) => {
-    axios
+  const updateCompany = async (url, company) => {
+    await axios.put(url, company, {
+      headers: {
+        accept: "text/plain",
+        "Content-Type": "application/json",
+      },
+    });
+  };
+
+  const getPeopleInCompany = async (url, id) => {
+    await axios
       .get(`${url}/${id}`)
       .then((res) => {
         setPeople(res.data.peoples);
@@ -37,8 +48,8 @@ export const useAxios = () => {
     await axios.delete(`${url}/${id}`);
   };
 
-  const createCompany = async (url, company) => {
-    await axios.post(url, company, {
+  const changeStatus = async (url, id) => {
+    await axios.put(`${url}/${id}`, {
       headers: {
         accept: "text/plain",
         "Content-Type": "application/json",
@@ -48,9 +59,11 @@ export const useAxios = () => {
 
   return {
     data,
-    createCompany,
     getData,
+    createCompany,
+    updateCompany,
     delById,
+    changeStatus,
     getPeopleInCompany,
     people,
   };

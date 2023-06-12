@@ -9,7 +9,7 @@ export const useFormat = () => {
   };
 
   const formatDate = (date) => {
-    if (date) {
+    if (date && typeof date == "string") {
       return date.split("T")[0].split("-").reverse().join("/");
     }
   };

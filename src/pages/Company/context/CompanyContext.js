@@ -4,36 +4,28 @@ export const CompanyContext = createContext();
 
 export const CompanyContextProvider = ({ children }) => {
   let emptyCompany = {
-    id: null,
-    cnpj: "",
-    status: "",
+    cnpj: null,
     openingDate: null,
-    companyName: "",
-    tradingName: "",
-    cnae: "",
-    legalNature: "",
+    companyName: null,
+    tradingName: null,
+    cnae: null,
+    legalNature: null,
     financeCapital: null,
     address: {
-      cep: "",
-      street: "",
-      bairro: "",
+      cep: null,
+      street: null,
+      bairro: null,
       number: null,
-      city: "",
+      city: null,
     },
   };
 
   const [company, setCompany] = useState(emptyCompany);
-  const [companyDialog, setCompanyDialog] = useState(null);
-  const [getByCNPJDialog, setGetByCNPJDialog] = useState(false);
 
   const statesTable = {
     emptyCompany,
     company,
     setCompany,
-    companyDialog,
-    setCompanyDialog,
-    getByCNPJDialog,
-    setGetByCNPJDialog,
   };
 
   return (
