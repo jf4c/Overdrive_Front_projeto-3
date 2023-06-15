@@ -39,10 +39,27 @@ export const useFormat = () => {
     }
   };
 
+  const statusValue = (company) => {
+    switch (company.status) {
+      case "Active":
+        return "Ativo";
+
+      case "Pending":
+        return "Pendente";
+
+      case "Inactive":
+        return "Inativo";
+
+      default:
+        return null;
+    }
+  };
+
   return {
     formatCnpj,
     formatDate,
     formatCurrency,
     getSeverity,
+    statusValue,
   };
 };

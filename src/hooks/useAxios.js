@@ -2,15 +2,19 @@ import { useState, useEffect } from "react";
 import axios from "../config/axios.config";
 
 export const useAxios = () => {
-  const [data, setData] = useState([]);
+  // const [data, setData] = useState([]);
+  const [companies, setCompanies] = useState([]);
+
   const [company, setCompany] = useState({});
   const [people, setPeople] = useState([]);
+  const [status, setStatus] = useState("");
+  const [err, setErr] = useState(0);
 
-  const getData = async (url) => {
+  const getCompanies = async (url) => {
     await axios
       .get(url)
       .then((res) => {
-        setData(res.data);
+        setCompanies(res.data);
       })
       .catch();
   };
@@ -49,17 +53,22 @@ export const useAxios = () => {
   };
 
   const changeStatus = async (url, id) => {
-    await axios.put(`${url}/${id}`, {
-      headers: {
-        accept: "text/plain",
-        "Content-Type": "application/json",
-      },
-    });
+    try {
+      const res = await axios.put(`${url}/${id}`, {
+        headers: {
+          accept: "text/plain",
+          "Content-Type": "application/json",
+        },
+      });
+      setStatus(res.status);
+    } catch {}
   };
 
   return {
-    data,
-    getData,
+    companies,
+    getCompanies,
+    setCompanies,
+    status,
     createCompany,
     updateCompany,
     delById,

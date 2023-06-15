@@ -2,7 +2,8 @@ import { useFormat } from "./useFormat";
 import { Tag } from "primereact/tag";
 
 export const useTemplate = () => {
-  const { formatCnpj, formatDate, formatCurrency, getSeverity } = useFormat();
+  const { formatCnpj, formatDate, formatCurrency, getSeverity, statusValue } =
+    useFormat();
 
   const cnpjBodyTemplate = (rowData) => {
     return formatCnpj(rowData.cnpj);
@@ -17,7 +18,9 @@ export const useTemplate = () => {
   };
 
   const statusBodyTemplate = (rowData) => {
-    return <Tag value={rowData.status} severity={getSeverity(rowData)}></Tag>;
+    return (
+      <Tag value={statusValue(rowData)} severity={getSeverity(rowData)}></Tag>
+    );
   };
 
   return {

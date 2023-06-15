@@ -1,9 +1,174 @@
 import { styled } from "../../../../config/stitches.config";
+import { Dialog } from "primereact/dialog";
+import { Calendar } from "primereact/calendar";
 
-export const Container = styled("div", {
+export const CreateCompany = styled(Dialog, {
+  "&.p-dialog .p-dialog-header": {
+    background: "$green500",
+    color: "$white",
+  },
+  "&.p-dialog .p-dialog-header .p-dialog-header-icon": {
+    color: "$white",
+  },
+});
+
+export const CalendarCreate = styled(Calendar, {
+  "&.p-calendar-w-btn-right .p-datepicker-trigger": {
+    background: "$green500",
+    border: "1px solid $green500",
+  },
+  "&.p-calendar-w-btn-right .p-datepicker-trigger:hover": {
+    background: "$green600",
+    border: "1px solid $green600",
+  },
+});
+
+export const EditCompany = styled(Dialog, {
+  "&.p-dialog .p-dialog-header": {
+    background: "$yellow500",
+    color: "$white",
+  },
+  "&.p-dialog .p-dialog-header .p-dialog-header-icon": {
+    color: "$white",
+  },
+});
+
+export const CalendarEdit = styled(Calendar, {
+  "&.p-calendar-w-btn-right .p-datepicker-trigger": {
+    background: "$yellow500",
+    border: "1px solid $yellow500",
+  },
+  "&.p-calendar-w-btn-right .p-datepicker-trigger:hover": {
+    background: "$yellow600",
+    border: "1px solid $yellow600",
+  },
+});
+
+export const DeleteCompany = styled(Dialog, {
+  "&.p-dialog .p-dialog-header": {
+    background: "$red500",
+    color: "$white",
+  },
+  "&.p-dialog .p-dialog-header .p-dialog-header-icon": {
+    color: "$white",
+  },
+});
+export const StatusChange = styled(Dialog, {
+  variants: {
+    headerStyle: {
+      active: {
+        "&.p-dialog .p-dialog-header": {
+          background: "$green500",
+          color: "$white",
+        },
+        "&.p-dialog .p-dialog-header .p-dialog-header-icon": {
+          color: "$white",
+        },
+      },
+
+      inactive: {
+        "&.p-dialog .p-dialog-header": {
+          background: "$red500",
+          color: "$white",
+        },
+        "&.p-dialog .p-dialog-header .p-dialog-header-icon": {
+          color: "$white",
+        },
+      },
+    },
+  },
+});
+export const Text = styled("div", {
+  textAlign: "center",
+  paddingTop: "1rem",
+  "& span": {
+    fontSize: "1.2rem",
+    verticalAlign: "middle",
+  },
+});
+export const ViewCompany = styled(Dialog, {
+  "&.p-dialog .p-dialog-header": {
+    background: "$blue500",
+    color: "$white",
+  },
+  "&.p-dialog .p-dialog-header .p-dialog-header-icon": {
+    color: "$white",
+  },
+});
+
+export const ActionTamplate = styled("div", {
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
+});
+
+export const Company = styled("div", {
+  marginTop: "1rem",
+  display: "grid",
+  gridTemplateColumns: "1fr 1fr 1fr 1fr",
+});
+
+export const InputContainer = styled("div", {
+  margin: "1rem 1rem",
+  display: "inline-block",
+  "& .p-float-label input:focus ~ label, .p-float-label input:-webkit-autofill ~ label, .p-float-label input.p-filled ~ label, .p-float-label textarea:focus ~ label, .p-float-label textarea.p-filled ~ label, .p-float-label .p-inputwrapper-focus ~ label, .p-float-label .p-inputwrapper-filled ~ label, .p-float-label .p-tooltip-target-wrapper ~ label ":
+    {
+      color: "#222",
+      fontSize: "18px",
+      top: "-0.95rem",
+      left: "0.5rem",
+    },
+
+  "&.companyName": {
+    gridColumnStart: "1",
+    gridColumnEnd: "5",
+  },
+  "&.tradingName": {
+    gridColumnStart: "1",
+    gridColumnEnd: "3",
+  },
+  "&.openingDate": {
+    gridColumnStart: "3",
+    gridColumnEnd: "5",
+  },
+  "&.cnpj": {
+    gridColumnStart: "1",
+    gridColumnEnd: "3",
+  },
+  "&.cnae": {
+    gridColumnStart: "3",
+    gridColumnEnd: "5",
+  },
+  "&.legalNature": {
+    gridColumnStart: "1",
+    gridColumnEnd: "3",
+  },
+  "&.financeCapital": {
+    gridColumnStart: "3",
+    gridColumnEnd: "5",
+  },
+  "&.financeCapitalEdit": {
+    gridColumnStart: "1",
+    gridColumnEnd: "5",
+  },
+
+  "&.cep": {
+    gridColumnStart: "1",
+    gridColumnEnd: "5",
+  },
+  "&.street": {
+    gridColumnStart: "1",
+    gridColumnEnd: "4",
+  },
+  "&.number": {},
+  "&.bairro": {
+    gridColumnStart: "1",
+    gridColumnEnd: "5",
+  },
+  "&.city": {
+    gridColumnStart: "1",
+    gridColumnEnd: "5",
+  },
 });
 
 export const ViewData = styled("div", {
@@ -42,33 +207,6 @@ export const ViewData = styled("div", {
     gridColumnEnd: "5",
   },
   "& .financeCapital": {
-    gridColumnStart: "1",
-    gridColumnEnd: "5",
-  },
-});
-
-export const Address = styled("div", {
-  gridColumnStart: "1",
-  gridColumnEnd: "5",
-  display: "grid",
-  gridTemplateColumns: "1fr 1fr 1fr 1fr",
-  "& .cep": {
-    gridColumnStart: "1",
-    gridColumnEnd: "5",
-  },
-  "& .street": {
-    gridColumnStart: "1",
-    gridColumnEnd: "4",
-  },
-  "& .number": {
-    gridColumnStart: "4",
-    gridColumnEnd: "5",
-  },
-  "& .bairro": {
-    gridColumnStart: "1",
-    gridColumnEnd: "5",
-  },
-  "& .city": {
     gridColumnStart: "1",
     gridColumnEnd: "5",
   },
@@ -122,94 +260,14 @@ export const PersonData = styled("div", {
   },
 });
 
-export const CreateCompany = styled("div", {});
-
-const container = styled("div", {
-  margin: "1rem 1rem",
-  display: "inline-block",
-  "& .p-float-label input:focus ~ label, .p-float-label input:-webkit-autofill ~ label, .p-float-label input.p-filled ~ label, .p-float-label textarea:focus ~ label, .p-float-label textarea.p-filled ~ label, .p-float-label .p-inputwrapper-focus ~ label, .p-float-label .p-inputwrapper-filled ~ label, .p-float-label .p-tooltip-target-wrapper ~ label ":
-    {
-      color: "#222",
-      fontSize: "18px",
-      top: "-0.95rem",
-      left: "0.5rem",
-    },
-});
-
-export const Company = styled("div", {
-  marginTop: "1rem",
+export const Address = styled("fieldset", {
   display: "grid",
   gridTemplateColumns: "1fr 1fr 1fr 1fr",
-});
-
-export const Name = styled(container, {
-  "&.company": {
-    gridColumnStart: "1",
-    gridColumnEnd: "5",
-  },
-  "&.trading": {
-    gridColumnStart: "1",
-    gridColumnEnd: "3",
+  marginTop: "1rem",
+  border: "2px solid rgb(102 102 102 / 18%)",
+  paddingTop: "1rem",
+  "& legend": {
+    fontSize: "20px",
+    marginLeft: "1rem",
   },
 });
-export const Data = styled(container, {
-  gridColumnStart: "3",
-  gridColumnEnd: "5",
-});
-
-export const CNPJ = styled(container, {
-  gridColumnStart: "1",
-  gridColumnEnd: "3",
-});
-
-export const CNAE = styled(container, {
-  gridColumnStart: "3",
-  gridColumnEnd: "5",
-});
-
-export const Nature = styled(container, {
-  gridColumnStart: "1",
-  gridColumnEnd: "3",
-});
-
-export const Finance = styled(container, {
-  gridColumnStart: "3",
-  gridColumnEnd: "5",
-});
-
-// export const Address = styled("fieldset", {
-//   display: "grid",
-//   gridTemplateColumns: "1fr 1fr 1fr 1fr",
-//   marginTop: "1rem",
-//   border: "2px solid rgb(102 102 102 / 18%)",
-//   paddingTop: "1rem",
-//   "& legend": {
-//     fontSize: "20px",
-//     marginLeft: "1rem",
-//   },
-// });
-
-export const Cep = styled(container, {
-  gridColumnStart: "1",
-  gridColumnEnd: "5",
-});
-export const Street = styled(container, {
-  gridColumnStart: "1",
-  gridColumnEnd: "4",
-});
-
-export const Number = styled(container, {});
-
-export const Bairro = styled(container, {
-  gridColumnStart: "1",
-  gridColumnEnd: "5",
-});
-export const City = styled(container, {
-  gridColumnStart: "1",
-  gridColumnEnd: "5",
-});
-
-export const StatusChange = styled("div", {});
-export const DeleteCompany = styled("div", {});
-export const ViewCompany = styled("div", {});
-export const EditCompany = styled("div", {});

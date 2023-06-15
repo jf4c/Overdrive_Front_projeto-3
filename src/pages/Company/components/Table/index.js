@@ -36,7 +36,8 @@ import { Message } from "primereact/message";
 import { useAddress } from "../../../../hooks/useAdrress";
 import { SpeedDial } from "primereact/speeddial";
 import {
-  Container,
+  ActionTamplate,
+  InputContainer,
   ViewData,
   Address,
   Icon,
@@ -45,39 +46,33 @@ import {
   PersonData,
   PersonContainer,
   CreateCompany,
-  Bairro,
-  CNAE,
-  CNPJ,
-  Cep,
-  City,
-  Data,
-  Div,
-  Finance,
-  Name,
-  Nature,
-  Number,
-  Street,
   Company,
   StatusChange,
   DeleteCompany,
   ViewCompany,
   EditCompany,
+  Text,
+  CalendarCreate,
+  CalendarEdit,
 } from "./styles";
 import { useTemplate } from "../../../../hooks/useTemplate";
 import { useInputChange } from "../../hooks/useInputChange";
 import HeaderTable from "../../../../components/HeaderTable";
 import ButtonStatus from "../../../../components/ButtonStatus";
+import TableLoading from "../../../../components/TableLoading";
+import axios from "../../../../config/axios.config";
 
 export default function Table() {
   const {
-    data,
-    getData,
+    companies,
+    getCompanies,
     delById,
     createCompany,
     updateCompany,
     getPeopleInCompany,
     changeStatus,
     people,
+    status,
   } = useAxios();
 
   const {
@@ -97,8 +92,7 @@ export default function Table() {
 
   const { emptyCompany, company, setCompany } = useContext(CompanyContext);
   const { address, setAddress, getAdrres } = useAddress();
-
-  const [companies, setCompanies] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [createCompanyDialog, setCreateCompanyDialog] = useState(false);
   const [editCompanyDialog, setEditCompanyDialog] = useState(false);
   const [viewCompanyComplete, setViewCompanyComplete] = useState(false);
@@ -113,8 +107,10 @@ export default function Table() {
 
   //-----CRUD------
   useEffect(() => {
-    getData("Company");
-  }, [data]);
+    setLoading(true);
+    getCompanies("Company");
+    setLoading(false);
+  }, []);
 
   const saveCreateCompany = () => {
     setSubmitted(true);
@@ -148,19 +144,19 @@ export default function Table() {
     delete _company.cnpj;
     delete _company.status;
     updateCompany("Company", _company);
-    setCompanies(data);
+    // setCompanies(data);
     console.log(_company);
   };
 
   const deleteCompany = () => {
     // let _companies = companies.filter((val) => val.id !== company.id);
     delById("Company", company.id);
-    getData("Company");
-    console.log(data);
+    // getData("Company");
+    // console.log(data);
 
-    setCompanies(data);
+    // setCompanies(data);
 
-    console.log(data);
+    // console.log(data);
     console.log(companies);
 
     setDeleteCompanyDialog(false);
@@ -176,8 +172,20 @@ export default function Table() {
 
   const toggleStatus = () => {
     changeStatus("Company/ChangeStatus", company.id);
-    getData("Company");
-    setCompanies(data);
+    console.log(status);
+    if (status === 200) {
+      const index = companies.findIndex((i) => i.id === company.id);
+      console.log(company);
+      const _company = { ...company };
+      if (_company.status === "Active") {
+        _company.status = "Inactive";
+      } else {
+        _company.status = "Active";
+      }
+      if (index !== -1) {
+        companies[index] = _company;
+      }
+    }
     setStatusCompanyDialog(false);
     setCompany(emptyCompany);
 
@@ -254,12 +262,17 @@ export default function Table() {
   const createCompanyDialogFooter = (
     <React.Fragment>
       <Button
-        label="Cancel"
+        label="Cancelar"
         icon="pi pi-times"
         outlined
         onClick={hideCreateDialog}
       />
-      <Button label="Save" icon="pi pi-check" onClick={saveCreateCompany} />
+      <Button
+        label="Salvar"
+        icon="pi pi-check"
+        severity="success"
+        onClick={saveCreateCompany}
+      />
     </React.Fragment>
   );
 
@@ -278,13 +291,14 @@ export default function Table() {
   const deleteCompanyDialogFooter = (
     <React.Fragment>
       <Button
-        label="No"
+        label="Cancelar"
         icon="pi pi-times"
+        autoFocus
         outlined
         onClick={hideDeleteCompanyDialog}
       />
       <Button
-        label="Yes"
+        label="Deletar"
         icon="pi pi-check"
         severity="danger"
         onClick={deleteCompany}
@@ -301,12 +315,23 @@ export default function Table() {
         onClick={hideStatusCompanyDialog}
         autoFocus
       />
-      <Button
-        label="Sim"
-        icon="pi pi-check"
-        severity="success"
-        onClick={toggleStatus}
-      />
+      {company.status == "Active" ? (
+        <Button
+          label="Desativar"
+          icon="pi pi-check"
+          // severity="success"
+          severity="danger"
+          onClick={toggleStatus}
+        />
+      ) : (
+        <Button
+          label="Ativar"
+          icon="pi pi-check"
+          // severity="success"
+          severity="success"
+          onClick={toggleStatus}
+        />
+      )}
     </React.Fragment>
   );
 
@@ -390,7 +415,7 @@ export default function Table() {
     };
 
     return (
-      <Container>
+      <ActionTamplate>
         <Button
           rounded
           icon={`pi pi-${statusIcon(rowData)}`}
@@ -430,747 +455,760 @@ export default function Table() {
           tooltip="Deletar"
           tooltipOptions={configTooltip}
         />
-      </Container>
+      </ActionTamplate>
     );
+  };
+
+  const statusChangeHeader = (rowData) => {
+    if (rowData.status == "Active") return "inactive";
+    return "active";
   };
 
   return (
     <div>
       <Toast ref={toast} />
       <div className="card">
-        <DataTable
-          ref={dt}
-          value={data}
-          selection={selectedCompanies}
-          onSelectionChange={(e) => setSelectedCompanies(e.value)}
-          dataKey="id"
-          paginator
-          rows={10}
-          rowsPerPageOptions={[5, 10, 25]}
-          paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} companies"
-          globalFilter={globalFilter}
-          header={
-            <HeaderTable
-              name="Empresas"
-              filter={(e) => setGlobalFilter(e.target.value)}
-              open={openCreateCompany}
-            />
-          }
-        >
-          <Column selectionMode="multiple" exportable={false}></Column>
-          <Column
-            header="Id"
-            field="id"
-            sortable
-            style={{ minWidth: "5rem" }}
-          ></Column>
-          <Column
-            header="Nome Empresa"
-            field="companyName"
-            sortable
-            style={{ minWidth: "16rem" }}
-          ></Column>
-          <Column
-            header="CNPJ"
-            field="cnpj"
-            body={cnpjBodyTemplate}
-            sortable
-            style={{ minWidth: "8rem" }}
-          ></Column>
-          <Column
-            header="data de abertura"
-            field="openingDate"
-            body={dateBodyTemplate}
-            sortable
-            style={{ minWidth: "10rem" }}
-          ></Column>
-          <Column
-            header="Capital Financeiro"
-            field="financeCapital"
-            body={priceBodyTemplate}
-            sortable
-            style={{ minWidth: "8rem" }}
-          ></Column>
+        {loading ? (
+          <TableLoading />
+        ) : (
+          <DataTable
+            value={companies}
+            // loading={true}
+            // selection={selectedCompanies}
+            onSelectionChange={(e) => setSelectedCompanies(e.value)}
+            dataKey="id"
+            removableSort
+            selectionMode="single"
+            paginator
+            rows={10}
+            rowsPerPageOptions={[5, 10, 25]}
+            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} companies"
+            globalFilter={globalFilter}
+            header={
+              <HeaderTable
+                name="Empresas"
+                filter={(e) => setGlobalFilter(e.target.value)}
+                open={openCreateCompany}
+              />
+            }
+          >
+            <Column
+              header="Id"
+              field="id"
+              sortable
+              style={{ minWidth: "5rem" }}
+            ></Column>
+            <Column
+              header="Nome Empresa"
+              field="companyName"
+              // sortable
+              style={{ minWidth: "16rem" }}
+            ></Column>
+            <Column
+              header="CNPJ"
+              field="cnpj"
+              body={cnpjBodyTemplate}
+              // sortable
+              style={{ minWidth: "8rem" }}
+            ></Column>
+            <Column
+              header="data de abertura"
+              field="openingDate"
+              body={dateBodyTemplate}
+              sortable
+              style={{ minWidth: "10rem" }}
+            ></Column>
+            <Column
+              header="Capital Financeiro"
+              field="financeCapital"
+              body={priceBodyTemplate}
+              sortable
+              style={{ minWidth: "8rem" }}
+            ></Column>
 
-          <Column
-            header="Status"
-            field="status"
-            body={statusBodyTemplate}
-            sortable
-            style={{ minWidth: "8rem" }}
-          ></Column>
-          <Column
-            body={actionBodyTemplate}
-            exportable={false}
-            style={{ minWidth: "9rem" }}
-          ></Column>
-        </DataTable>
+            <Column
+              header="Status"
+              field="status"
+              body={statusBodyTemplate}
+              sortable
+              style={{ minWidth: "8rem" }}
+            ></Column>
+            <Column
+              body={actionBodyTemplate}
+              exportable={false}
+              style={{ minWidth: "9rem" }}
+            ></Column>
+          </DataTable>
+        )}
       </div>
 
-      <CreateCompany>
-        <Dialog
-          visible={createCompanyDialog}
-          style={{ width: "40rem" }}
-          breakpoints={{ "960px": "75vw", "641px": "90vw" }}
-          header="Create Company"
-          modal
-          className="p-fluid"
-          footer={createCompanyDialogFooter}
-          onHide={hideCreateDialog}
-        >
-          <Company>
-            {/* companyName */}
-            <Name className="company">
-              <span className="p-float-label">
-                <InputText
-                  id="companyName"
-                  value={company.companyName}
-                  onChange={(e) => onInputChange(e, "companyName")}
-                  autoFocus
-                />
-                <label htmlFor="companyName">Nome da Empresa</label>
-              </span>
-            </Name>
+      <CreateCompany
+        visible={createCompanyDialog}
+        style={{ width: "40rem" }}
+        breakpoints={{ "960px": "75vw", "641px": "90vw" }}
+        header="Criar Empresa"
+        modal
+        className="p-fluid"
+        footer={createCompanyDialogFooter}
+        onHide={hideCreateDialog}
+      >
+        <Company>
+          {/* companyName */}
+          <InputContainer className="companyName">
+            <span className="p-float-label">
+              <InputText
+                id="companyName"
+                value={company.companyName}
+                onChange={(e) => onInputChange(e, "companyName")}
+                autoFocus
+              />
+              <label htmlFor="companyName">Nome da Empresa</label>
+            </span>
+          </InputContainer>
 
-            {/* tradingName */}
-            <Name className="trading">
-              <span className="p-float-label">
-                <InputText
-                  id="tradingName"
-                  value={company.tradingName}
-                  onChange={(e) => onInputChange(e, "tradingName")}
-                />
-                <label htmlFor="tradingName">Nome Fantazia</label>
-              </span>
-            </Name>
+          {/* tradingName */}
+          <InputContainer className="tradingName">
+            <span className="p-float-label">
+              <InputText
+                id="tradingName"
+                value={company.tradingName}
+                onChange={(e) => onInputChange(e, "tradingName")}
+              />
+              <label htmlFor="tradingName">Nome Fantazia</label>
+            </span>
+          </InputContainer>
 
-            {/* openingDate */}
-            <Data className="field">
-              <span className="p-float-label">
-                <Calendar
-                  id="openingDate"
-                  onChange={(e) => onInputChange(e, "openingDate")}
-                  value={company.openingDate}
-                  dateFormat="dd/mm/yy"
-                  showIcon
-                />
-                <label htmlFor="openingDate">Data de abertura</label>
-              </span>
-            </Data>
+          {/* openingDate */}
+          <InputContainer className="openingDate">
+            <span className="p-float-label">
+              <CalendarCreate
+                id="openingDate"
+                onChange={(e) => onInputChange(e, "openingDate")}
+                value={company.openingDate}
+                dateFormat="dd/mm/yy"
+                showIcon
+              />
+              <label htmlFor="openingDate">Data de abertura</label>
+            </span>
+          </InputContainer>
 
-            {/* cnpj */}
-            <CNPJ>
-              <span className="p-float-label">
-                <InputMask
-                  id="cnpj"
-                  mask="99.999.999/9999-99"
-                  unmask={true}
-                  value={company.cnpj}
-                  onChange={(e) => onInputChange(e, "cnpj")}
-                  required
-                  // autoClear={false}
-                  className={classNames({
-                    "p-invalid":
-                      (submitted && !company.cnpj) ||
-                      (submitted && company.cnpj.length < 14),
-                  })}
-                />
-                <label htmlFor="cnpj">CNPJ</label>
-              </span>
-              {submitted && !company.cnpj && (
-                <Message
-                  style={{
-                    background: "none",
-                    justifyContent: "start",
-                    padding: "5px",
-                  }}
-                  severity="error"
-                  text="CNPJ é obrigatorio"
-                />
-              )}
-              {submitted && company.cnpj.length < 14 && (
-                <Message
-                  style={{
-                    background: "none",
-                    justifyContent: "start",
-                    padding: "5px",
-                  }}
-                  severity="error"
-                  text="CNPJ tem 14 numeros."
-                />
-              )}
-            </CNPJ>
+          {/* cnpj */}
+          <InputContainer className="cnpj">
+            <span className="p-float-label">
+              <InputMask
+                id="cnpj"
+                mask="99.999.999/9999-99"
+                unmask={true}
+                value={company.cnpj}
+                onChange={(e) => onInputChange(e, "cnpj")}
+                required
+                // autoClear={false}
+                className={classNames({
+                  "p-invalid":
+                    (submitted && !company.cnpj) ||
+                    (submitted && company.cnpj.length < 14),
+                })}
+              />
+              <label htmlFor="cnpj">CNPJ</label>
+            </span>
+            {submitted && !company.cnpj && (
+              <Message
+                style={{
+                  background: "none",
+                  justifyContent: "start",
+                  padding: "5px",
+                }}
+                severity="error"
+                text="CNPJ é obrigatorio"
+              />
+            )}
+            {submitted && company.cnpj.length < 14 && (
+              <Message
+                style={{
+                  background: "none",
+                  justifyContent: "start",
+                  padding: "5px",
+                }}
+                severity="error"
+                text="CNPJ tem 14 numeros."
+              />
+            )}
+          </InputContainer>
 
-            {/* cnae */}
-            <CNAE className="field">
-              <span className="p-float-label">
-                <InputMask
-                  id="cnae"
-                  mask="9999999"
-                  onChange={(e) => onInputChange(e, "cnae")}
-                  value={company.cnae}
-                  required
-                  className={classNames({
-                    "p-invalid":
-                      submitted &&
-                      !company.cnae &&
-                      (submitted && company.cnae.length) < 7,
-                  })}
-                />
-                <label htmlFor="cnae">CNAE</label>
-              </span>
-              {submitted && !company.cnae && (
-                <Message
-                  style={{
-                    background: "none",
-                    justifyContent: "start",
-                    padding: "5px",
-                  }}
-                  severity="error"
-                  text="CNAE é obrigatório."
-                />
-              )}
-              {submitted && company.cnae.length < 7 && (
-                <Message
-                  style={{
-                    background: "none",
-                    justifyContent: "start",
-                    padding: "5px",
-                  }}
-                  severity="error"
-                  text="Minimo de 7 caracteres."
-                />
-              )}
-            </CNAE>
+          {/* cnae */}
+          <InputContainer className="cnae">
+            <span className="p-float-label">
+              <InputMask
+                id="cnae"
+                mask="9999999"
+                onChange={(e) => onInputChange(e, "cnae")}
+                value={company.cnae}
+                required
+                className={classNames({
+                  "p-invalid":
+                    submitted &&
+                    !company.cnae &&
+                    (submitted && company.cnae.length) < 7,
+                })}
+              />
+              <label htmlFor="cnae">CNAE</label>
+            </span>
+            {submitted && !company.cnae && (
+              <Message
+                style={{
+                  background: "none",
+                  justifyContent: "start",
+                  padding: "5px",
+                }}
+                severity="error"
+                text="CNAE é obrigatório."
+              />
+            )}
+            {submitted && company.cnae.length < 7 && (
+              <Message
+                style={{
+                  background: "none",
+                  justifyContent: "start",
+                  padding: "5px",
+                }}
+                severity="error"
+                text="Minimo de 7 caracteres."
+              />
+            )}
+          </InputContainer>
 
-            {/* legalNature */}
-            <Nature className="field">
-              <span className="p-float-label">
-                <InputText
-                  id="legalNature"
-                  value={company.legalNature}
-                  onChange={(e) => onInputChange(e, "legalNature")}
-                  // autoFocus
-                />
-                <label htmlFor="legalNature">Naturesa legal</label>
-              </span>
-            </Nature>
+          {/* legalNature */}
+          <InputContainer className="legalNature">
+            <span className="p-float-label">
+              <InputText
+                id="legalNature"
+                value={company.legalNature}
+                onChange={(e) => onInputChange(e, "legalNature")}
+                // autoFocus
+              />
+              <label htmlFor="legalNature">Naturesa legal</label>
+            </span>
+          </InputContainer>
 
-            {/* financeCapital */}
-            <Finance className="field col">
-              <span className="p-float-label">
-                <InputNumber
-                  id="financeCapital"
-                  value={company.financeCapital}
-                  onValueChange={(e) =>
-                    onInputNumberChange(e, "financeCapital")
-                  }
-                  mode="currency"
-                  currency="BRL"
-                  locale="pt-RS"
-                />
-                <label htmlFor="financeCapital">Capital Financeiro</label>
-              </span>
-            </Finance>
-          </Company>
+          {/* financeCapital */}
+          <InputContainer className="financeCapital">
+            <span className="p-float-label">
+              <InputNumber
+                id="financeCapital"
+                value={company.financeCapital}
+                onValueChange={(e) => onInputNumberChange(e, "financeCapital")}
+                mode="currency"
+                currency="BRL"
+                locale="pt-RS"
+              />
+              <label htmlFor="financeCapital">Capital Financeiro</label>
+            </span>
+          </InputContainer>
+        </Company>
 
-          <Address>
-            <legend>Endereço da Empresa</legend>
-            {/* cep */}
+        <Address>
+          <legend>Endereço da Empresa</legend>
+          {/* cep */}
 
-            <Cep className="field">
-              <span className="p-float-label">
-                <InputMask
-                  id="companyName"
-                  required
-                  mask="99999-999"
-                  unmask={true}
-                  autoClear={false}
-                  onChange={(e) => onChangeCep(e)}
-                />
-                <label htmlFor="cep">CEP</label>
-              </span>
-              {submitted && !company.address.cep && (
-                <Message
-                  style={{
-                    background: "none",
-                    justifyContent: "start",
-                    padding: "5px",
-                  }}
-                  severity="error"
-                  text="CEP é obrigatório."
-                />
-              )}
-              {submitted && company.address.cep < 7 && (
-                <Message
-                  style={{
-                    background: "none",
-                    justifyContent: "start",
-                    padding: "5px",
-                  }}
-                  severity="error"
-                  text="Minimo de 7 caracteres."
-                />
-              )}
-              {existCep == false && (
-                <Message
-                  style={{
-                    background: "none",
-                    justifyContent: "start",
-                    padding: "5px",
-                  }}
-                  severity="error"
-                  text="cep não encontrado "
-                />
-              )}
-            </Cep>
+          <InputContainer className="cep">
+            <span className="p-float-label">
+              <InputMask
+                id="companyName"
+                required
+                mask="99999-999"
+                unmask={true}
+                autoClear={false}
+                onChange={(e) => onChangeCep(e)}
+              />
+              <label htmlFor="cep">CEP</label>
+            </span>
+            {submitted && !company.address.cep && (
+              <Message
+                style={{
+                  background: "none",
+                  justifyContent: "start",
+                  padding: "5px",
+                }}
+                severity="error"
+                text="CEP é obrigatório."
+              />
+            )}
+            {submitted && company.address.cep < 7 && (
+              <Message
+                style={{
+                  background: "none",
+                  justifyContent: "start",
+                  padding: "5px",
+                }}
+                severity="error"
+                text="Minimo de 7 caracteres."
+              />
+            )}
+            {existCep == false && (
+              <Message
+                style={{
+                  background: "none",
+                  justifyContent: "start",
+                  padding: "5px",
+                }}
+                severity="error"
+                text="cep não encontrado "
+              />
+            )}
+          </InputContainer>
 
-            {/* street */}
-            <Street className="field">
-              <span className="p-float-label">
-                <InputText
-                  id="street"
-                  value={company.address.street}
-                  onChange={(e) => onInputAddressChange(e, "street")}
-                />
+          {/* street */}
+          <InputContainer className="street">
+            <span className="p-float-label">
+              <InputText
+                id="street"
+                value={company.address.street}
+                onChange={(e) => onInputAddressChange(e, "street")}
+              />
 
-                <label htmlFor="street">Rua</label>
-              </span>
-            </Street>
+              <label htmlFor="street">Rua</label>
+            </span>
+          </InputContainer>
 
-            <Number className="field col">
-              <span className="p-float-label">
-                <InputNumber
-                  id="number"
-                  value={company.address.number}
-                  onValueChange={(e) => onInputAddressChange(e, "number")}
-                />
-                <label htmlFor="number">Numero</label>
-              </span>
-            </Number>
+          <InputContainer className="number">
+            <span className="p-float-label">
+              <InputNumber
+                id="number"
+                value={company.address.number}
+                onValueChange={(e) => onInputAddressChange(e, "number")}
+              />
+              <label htmlFor="number">Numero</label>
+            </span>
+          </InputContainer>
 
-            {/* bairro */}
-            <Bairro className="field">
-              <span className="p-float-label">
-                <InputText
-                  id="bairro"
-                  value={company.address.bairro}
-                  onChange={(e) => onInputAddressChange(e, "bairro")}
-                />
-                <label htmlFor="bairro">Bairro</label>
-              </span>
-            </Bairro>
+          {/* bairro */}
+          <InputContainer className="bairro">
+            <span className="p-float-label">
+              <InputText
+                id="bairro"
+                value={company.address.bairro}
+                onChange={(e) => onInputAddressChange(e, "bairro")}
+              />
+              <label htmlFor="bairro">Bairro</label>
+            </span>
+          </InputContainer>
 
-            <City className="field">
-              <span className="p-float-label">
-                <InputText
-                  id="city"
-                  value={company.address.city}
-                  onChange={(e) => onInputAddressChange(e, "city")}
-                />
-                <label htmlFor="city">Cidade</label>
-              </span>
-            </City>
-          </Address>
-        </Dialog>
+          <InputContainer className="city">
+            <span className="p-float-label">
+              <InputText
+                id="city"
+                value={company.address.city}
+                onChange={(e) => onInputAddressChange(e, "city")}
+              />
+              <label htmlFor="city">Cidade</label>
+            </span>
+          </InputContainer>
+        </Address>
       </CreateCompany>
 
-      <EditCompany>
-        <Dialog
-          visible={editCompanyDialog}
-          style={{ width: "40rem" }}
-          breakpoints={{ "960px": "75vw", "641px": "90vw" }}
-          header={`Edite Empresa ${company.id}`}
-          modal
-          className="p-fluid"
-          footer={editCompanyDialogFooter}
-          onHide={hideEditDialog}
-        >
-          <Company>
-            {/* companyName */}
-            <Name className="company">
-              <span className="p-float-label">
-                <InputText
-                  id="companyName"
-                  value={company.companyName}
-                  onChange={(e) => onInputChange(e, "companyName")}
-                  autoFocus
-                />
-                <label htmlFor="companyName">Nome da Empresa</label>
-              </span>
-            </Name>
+      <EditCompany
+        visible={editCompanyDialog}
+        style={{ width: "40rem" }}
+        breakpoints={{ "960px": "75vw", "641px": "90vw" }}
+        header={`Edite Empresa ${company.id}`}
+        modal
+        className="p-fluid"
+        footer={editCompanyDialogFooter}
+        onHide={hideEditDialog}
+      >
+        <Company>
+          {/* companyName */}
+          <InputContainer className="companyName">
+            <span className="p-float-label">
+              <InputText
+                id="companyName"
+                value={company.companyName}
+                onChange={(e) => onInputChange(e, "companyName")}
+                autoFocus
+              />
+              <label htmlFor="companyName">Nome da Empresa</label>
+            </span>
+          </InputContainer>
 
-            {/* tradingName */}
-            <Name className="trading">
-              <span className="p-float-label">
-                <InputText
-                  id="tradingName"
-                  value={company.tradingName}
-                  onChange={(e) => onInputChange(e, "tradingName")}
-                />
-                <label htmlFor="tradingName">Nome Fantazia</label>
-              </span>
-            </Name>
+          {/* tradingName */}
+          <InputContainer className="tradingName">
+            <span className="p-float-label">
+              <InputText
+                id="tradingName"
+                value={company.tradingName}
+                onChange={(e) => onInputChange(e, "tradingName")}
+              />
+              <label htmlFor="tradingName">Nome Fantazia</label>
+            </span>
+          </InputContainer>
 
-            {/* openingDate */}
-            <Data className="field">
-              <span className="p-float-label">
-                <Calendar
-                  id="openingDate"
-                  value={company.openingDate}
-                  onChange={(e) => onInputChange(e, "openingDate")}
-                  dateFormat="dd/mm/yy"
-                  showIcon
-                />
-                <label htmlFor="openingDate">Data de abertura</label>
-              </span>
-            </Data>
+          {/* openingDate */}
+          <InputContainer className="openingDate">
+            <span className="p-float-label">
+              <CalendarEdit
+                id="openingDate"
+                value={company.openingDate}
+                onChange={(e) => onInputChange(e, "openingDate")}
+                dateFormat="dd/mm/yy"
+                showIcon
+              />
+              <label htmlFor="openingDate">Data de abertura</label>
+            </span>
+          </InputContainer>
 
-            {/* cnae */}
-            <CNAE className="field">
-              <span className="p-float-label">
-                <InputMask
-                  id="cnae"
-                  mask="9999999"
-                  onChange={(e) => onInputChange(e, "cnae")}
-                  value={company.cnae}
-                  required
-                  className={classNames({
-                    "p-invalid":
-                      submitted &&
-                      !company.cnae &&
-                      (submitted && company.cnae.length) < 7,
-                  })}
-                />
-                <label htmlFor="cnae">CNAE</label>
-              </span>
-              {submitted && !company.cnae && (
-                <Message
-                  style={{
-                    background: "none",
-                    justifyContent: "start",
-                    padding: "5px",
-                  }}
-                  severity="error"
-                  text="CNAE é obrigatório."
-                />
-              )}
-              {submitted && company.cnae.length < 7 && (
-                <Message
-                  style={{
-                    background: "none",
-                    justifyContent: "start",
-                    padding: "5px",
-                  }}
-                  severity="error"
-                  text="Minimo de 7 caracteres."
-                />
-              )}
-            </CNAE>
+          {/* legalNature */}
+          <InputContainer className="legalNature">
+            <span className="p-float-label">
+              <InputText
+                id="legalNature"
+                value={company.legalNature}
+                onChange={(e) => onInputChange(e, "legalNature")}
+                // autoFocus
+              />
+              <label htmlFor="legalNature">Naturesa legal</label>
+            </span>
+          </InputContainer>
 
-            {/* legalNature */}
-            <Nature className="field">
-              <span className="p-float-label">
-                <InputText
-                  id="legalNature"
-                  value={company.legalNature}
-                  onChange={(e) => onInputChange(e, "legalNature")}
-                  // autoFocus
-                />
-                <label htmlFor="legalNature">Naturesa legal</label>
-              </span>
-            </Nature>
+          {/* cnae */}
+          <InputContainer className="cnae">
+            <span className="p-float-label">
+              <InputMask
+                id="cnae"
+                mask="9999999"
+                onChange={(e) => onInputChange(e, "cnae")}
+                value={company.cnae}
+                required
+                className={classNames({
+                  "p-invalid":
+                    submitted &&
+                    !company.cnae &&
+                    (submitted && company.cnae.length) < 7,
+                })}
+              />
+              <label htmlFor="cnae">CNAE</label>
+            </span>
+            {submitted && !company.cnae && (
+              <Message
+                style={{
+                  background: "none",
+                  justifyContent: "start",
+                  padding: "5px",
+                }}
+                severity="error"
+                text="CNAE é obrigatório."
+              />
+            )}
+            {submitted && company.cnae.length < 7 && (
+              <Message
+                style={{
+                  background: "none",
+                  justifyContent: "start",
+                  padding: "5px",
+                }}
+                severity="error"
+                text="Minimo de 7 caracteres."
+              />
+            )}
+          </InputContainer>
 
-            {/* financeCapital */}
-            <Finance className="field col">
-              <span className="p-float-label">
-                <InputNumber
-                  id="financeCapital"
-                  value={company.financeCapital}
-                  onValueChange={(e) =>
-                    onInputNumberChange(e, "financeCapital")
-                  }
-                  mode="currency"
-                  currency="BRL"
-                  locale="pt-RS"
-                />
-                <label htmlFor="financeCapital">Capital Financeiro</label>
-              </span>
-            </Finance>
-          </Company>
+          {/* financeCapital */}
+          <InputContainer className="financeCapitalEdit">
+            <span className="p-float-label">
+              <InputNumber
+                id="financeCapital"
+                value={company.financeCapital}
+                onValueChange={(e) => onInputNumberChange(e, "financeCapital")}
+                mode="currency"
+                currency="BRL"
+                locale="pt-RS"
+              />
+              <label htmlFor="financeCapital">Capital Financeiro</label>
+            </span>
+          </InputContainer>
+        </Company>
 
-          <Address>
-            <legend>Endereço da Empresa</legend>
-            {/* cep */}
+        <Address>
+          <legend>Endereço da Empresa</legend>
+          {/* cep */}
 
-            <Cep className="field">
-              <span className="p-float-label">
-                <InputMask
-                  id="companyName"
-                  required
-                  mask="99999-999"
-                  unmask={true}
-                  autoClear={false}
-                  value={company.address.cep}
-                  onChange={(e) => onInputAddressChange(e)}
-                />
-                <label htmlFor="cep">CEP</label>
-              </span>
-              {submitted && !company.address.cep && (
-                <Message
-                  style={{
-                    background: "none",
-                    justifyContent: "start",
-                    padding: "5px",
-                  }}
-                  severity="error"
-                  text="CEP é obrigatório."
-                />
-              )}
-              {submitted && company.address.cep < 7 && (
-                <Message
-                  style={{
-                    background: "none",
-                    justifyContent: "start",
-                    padding: "5px",
-                  }}
-                  severity="error"
-                  text="Minimo de 7 caracteres."
-                />
-              )}
-              {existCep == false && (
-                <Message
-                  style={{
-                    background: "none",
-                    justifyContent: "start",
-                    padding: "5px",
-                  }}
-                  severity="error"
-                  text="cep não encontrado "
-                />
-              )}
-            </Cep>
+          <InputContainer className="cep">
+            <span className="p-float-label">
+              <InputMask
+                id="companyName"
+                required
+                mask="99999-999"
+                unmask={true}
+                autoClear={false}
+                value={company.address.cep}
+                onChange={(e) => onInputAddressChange(e)}
+              />
+              <label htmlFor="cep">CEP</label>
+            </span>
+            {submitted && !company.address.cep && (
+              <Message
+                style={{
+                  background: "none",
+                  justifyContent: "start",
+                  padding: "5px",
+                }}
+                severity="error"
+                text="CEP é obrigatório."
+              />
+            )}
+            {submitted && company.address.cep < 7 && (
+              <Message
+                style={{
+                  background: "none",
+                  justifyContent: "start",
+                  padding: "5px",
+                }}
+                severity="error"
+                text="Minimo de 7 caracteres."
+              />
+            )}
+            {existCep == false && (
+              <Message
+                style={{
+                  background: "none",
+                  justifyContent: "start",
+                  padding: "5px",
+                }}
+                severity="error"
+                text="cep não encontrado "
+              />
+            )}
+          </InputContainer>
 
-            {/* street */}
-            <Street className="field">
-              <span className="p-float-label">
-                <InputText
-                  id="street"
-                  value={company.address.street}
-                  onChange={(e) => onInputAddressChange(e, "street")}
-                />
+          {/* street */}
+          <InputContainer className="street">
+            <span className="p-float-label">
+              <InputText
+                id="street"
+                value={company.address.street}
+                onChange={(e) => onInputAddressChange(e, "street")}
+              />
 
-                <label htmlFor="street">Rua</label>
-              </span>
-            </Street>
+              <label htmlFor="street">Rua</label>
+            </span>
+          </InputContainer>
 
-            <Number className="field col">
-              <span className="p-float-label">
-                <InputNumber
-                  id="number"
-                  value={company.address.number}
-                  onValueChange={(e) => onInputAddressChange(e, "number")}
-                />
-                <label htmlFor="number">Numero</label>
-              </span>
-            </Number>
+          <InputContainer className="number">
+            <span className="p-float-label">
+              <InputNumber
+                id="number"
+                value={company.address.number}
+                onValueChange={(e) => onInputAddressChange(e, "number")}
+              />
+              <label htmlFor="number">Numero</label>
+            </span>
+          </InputContainer>
 
-            {/* bairro */}
-            <Bairro className="field">
-              <span className="p-float-label">
-                <InputText
-                  id="bairro"
-                  value={company.address.bairro}
-                  onChange={(e) => onInputAddressChange(e, "bairro")}
-                />
-                <label htmlFor="bairro">Bairro</label>
-              </span>
-            </Bairro>
+          {/* bairro */}
+          <InputContainer className="bairro">
+            <span className="p-float-label">
+              <InputText
+                id="bairro"
+                value={company.address.bairro}
+                onChange={(e) => onInputAddressChange(e, "bairro")}
+              />
+              <label htmlFor="bairro">Bairro</label>
+            </span>
+          </InputContainer>
 
-            <City className="field">
-              <span className="p-float-label">
-                <InputText
-                  id="city"
-                  value={company.address.city}
-                  onChange={(e) => onInputAddressChange(e, "city")}
-                />
-                <label htmlFor="city">Cidade</label>
-              </span>
-            </City>
-          </Address>
-        </Dialog>
+          <InputContainer className="city">
+            <span className="p-float-label">
+              <InputText
+                id="city"
+                value={company.address.city}
+                onChange={(e) => onInputAddressChange(e, "city")}
+              />
+              <label htmlFor="city">Cidade</label>
+            </span>
+          </InputContainer>
+        </Address>
       </EditCompany>
 
-      <ViewCompany>
-        <Dialog
-          visible={viewCompanyComplete}
-          style={{ width: "35rem" }}
-          breakpoints={{ "960px": "75vw", "641px": "90vw" }}
-          header={`Informações da empresa ${company.id}`}
-          modal
-          className="p-fluid"
-          footer={ViewCompanyDialogFooter}
-          onHide={hideViewCompanyComplete}
-        >
-          <TabView>
-            <TabPanel header={companyHeader}>
-              <ViewData>
-                <TextData
-                  data={company.companyName}
-                  name="Nome Da empresa"
-                  className="companyName"
-                />
-                <TextData
-                  data={company.tradingName}
-                  name="Nome Fantazia"
-                  className="tradingName"
-                />
-                <TextData
-                  data={company.status}
-                  name="Status"
-                  className="status"
-                />
+      <ViewCompany
+        visible={viewCompanyComplete}
+        style={{ width: "35rem" }}
+        breakpoints={{ "960px": "75vw", "641px": "90vw" }}
+        header={`Informações da empresa ${company.id}`}
+        modal
+        className="p-fluid"
+        footer={ViewCompanyDialogFooter}
+        onHide={hideViewCompanyComplete}
+      >
+        <TabView>
+          <TabPanel header={companyHeader}>
+            <ViewData>
+              <TextData
+                data={company.companyName}
+                name="Nome Da empresa"
+                className="companyName"
+              />
+              <TextData
+                data={company.tradingName}
+                name="Nome Fantazia"
+                className="tradingName"
+              />
+              <TextData
+                data={company.status}
+                name="Status"
+                className="status"
+              />
 
-                <TextData
-                  data={cnpjBodyTemplate(company)}
-                  name="CNPJ"
-                  className="cnpj"
-                />
-                <TextData data={company.cnae} name="CNAE" className="cnae" />
+              <TextData
+                data={cnpjBodyTemplate(company)}
+                name="CNPJ"
+                className="cnpj"
+              />
+              <TextData data={company.cnae} name="CNAE" className="cnae" />
 
-                <TextData
-                  data={company.legalNature}
-                  name="Natureza Legal"
-                  className="legalNature"
-                />
+              <TextData
+                data={company.legalNature}
+                name="Natureza Legal"
+                className="legalNature"
+              />
 
-                <TextData
-                  data={dateBodyTemplate(company)}
-                  name="Data de Abertura"
-                  className="openingDate"
-                />
-                <TextData
-                  data={priceBodyTemplate(company)}
-                  name="Capital Financeiro"
-                  className="financeCapital"
-                />
-              </ViewData>
-            </TabPanel>
+              <TextData
+                data={dateBodyTemplate(company)}
+                name="Data de Abertura"
+                className="openingDate"
+              />
+              <TextData
+                data={priceBodyTemplate(company)}
+                name="Capital Financeiro"
+                className="financeCapital"
+              />
+            </ViewData>
+          </TabPanel>
 
-            <TabPanel header={addressHeader}>
-              <Address>
-                <TextData
-                  data={company.address.cep}
-                  name="CEP"
-                  className="cep"
-                />
-                <TextData
-                  data={company.address.street}
-                  name="Rua"
-                  className="street"
-                />
-                <TextData
-                  data={company.address.number}
-                  icon="star"
-                  name="Numero"
-                  className="number"
-                />
-                <TextData
-                  data={company.address.bairro}
-                  icon="star"
-                  name="Bairro"
-                  className="bairro"
-                />
+          <TabPanel header={addressHeader}>
+            <Address>
+              <TextData data={company.address.cep} name="CEP" className="cep" />
+              <TextData
+                data={company.address.street}
+                name="Rua"
+                className="street"
+              />
+              <TextData
+                data={company.address.number}
+                icon="star"
+                name="Numero"
+                className="number"
+              />
+              <TextData
+                data={company.address.bairro}
+                icon="star"
+                name="Bairro"
+                className="bairro"
+              />
 
-                <TextData
-                  data={company.address.city}
-                  name="Cidade"
-                  className="city"
-                />
-              </Address>
-            </TabPanel>
-            <TabPanel header={peopleHeader}>
-              <PersonContainer>
-                {people.map((person) => (
-                  <Person>
-                    <Avatar icon="pi pi-user" shape="circle" />
-                    <div>
-                      <PersonData>
-                        <label>Nome:</label>
-                        <li>{person.name.split(" ")[0]}</li>
-                      </PersonData>
-                      <PersonData>
-                        <label>Usuario: </label>
-                        <li>{person.user}</li>
-                      </PersonData>
-                      <PersonData>
-                        <label>CPF: </label>
-                        <li>{person.cpf}</li>
-                      </PersonData>
-                      <PersonData>
-                        <label>RG: </label>
-                        <li>{person.rg}</li>
-                      </PersonData>
-                      <PersonData>
-                        <label>Tel: </label>
-                        <li>{person.phone}</li>
-                      </PersonData>
-                    </div>
-                  </Person>
-                ))}
-              </PersonContainer>
-            </TabPanel>
-          </TabView>
-        </Dialog>
+              <TextData
+                data={company.address.city}
+                name="Cidade"
+                className="city"
+              />
+            </Address>
+          </TabPanel>
+          <TabPanel header={peopleHeader}>
+            <PersonContainer>
+              {people.map((person) => (
+                <Person>
+                  <Avatar icon="pi pi-user" shape="circle" />
+                  <div>
+                    <PersonData>
+                      <label>Nome:</label>
+                      <li>{person.name.split(" ")[0]}</li>
+                    </PersonData>
+                    <PersonData>
+                      <label>Usuario: </label>
+                      <li>{person.user}</li>
+                    </PersonData>
+                    <PersonData>
+                      <label>CPF: </label>
+                      <li>{person.cpf}</li>
+                    </PersonData>
+                    <PersonData>
+                      <label>RG: </label>
+                      <li>{person.rg}</li>
+                    </PersonData>
+                    <PersonData>
+                      <label>Tel: </label>
+                      <li>{person.phone}</li>
+                    </PersonData>
+                  </div>
+                </Person>
+              ))}
+            </PersonContainer>
+          </TabPanel>
+        </TabView>
       </ViewCompany>
 
-      <DeleteCompany>
-        <Dialog
-          visible={deleteCompanyDialog}
-          style={{ width: "32rem" }}
-          breakpoints={{ "960px": "75vw", "641px": "90vw" }}
-          header="Confirm"
-          modal
-          footer={deleteCompanyDialogFooter}
-          onHide={hideDeleteCompanyDialog}
-        >
-          <div className="confirmation-content">
-            <i
-              className="pi pi-exclamation-triangle mr-3"
-              style={{ fontSize: "2rem" }}
-            />
-            {company && (
-              <span>
-                Are you sure you want to delete {/* <b>{company.name}</b>? */}
-              </span>
-            )}
-          </div>
-        </Dialog>
+      <DeleteCompany
+        visible={deleteCompanyDialog}
+        style={{ width: "32rem" }}
+        breakpoints={{ "960px": "75vw", "641px": "90vw" }}
+        header="Deletar"
+        modal
+        footer={deleteCompanyDialogFooter}
+        onHide={hideDeleteCompanyDialog}
+      >
+        <Text>
+          <i
+            className="pi pi-exclamation-triangle"
+            style={{
+              fontSize: "2rem",
+              margin: ".5rem",
+              verticalAlign: "middle",
+            }}
+          />
+          <span>Tem certeza que deseja deletar essa empresa</span>
+        </Text>
+
+        {/* <div className="confirmation-content">
+          <i
+            className="pi pi-exclamation-triangle mr-3"
+            style={{ fontSize: "2rem" }}
+          />
+          {company && (
+            <span>
+              Are you sure you want to delete
+            </span>
+          )}
+        </div> */}
       </DeleteCompany>
 
-      <StatusChange>
-        <Dialog
-          visible={statusCompanyDialog}
-          style={{ width: "32rem" }}
-          breakpoints={{ "960px": "75vw", "641px": "90vw" }}
-          header="Confirmar mudança de status"
-          modal
-          footer={statusChangeDialogFooter}
-          onHide={hideStatusCompanyDialog}
-        >
-          <div className="confirmation-content">
-            {/* <i
-              className="pi pi-exclamation-triangle mr-3"
-              style={{ fontSize: "2rem" }}
-            /> */}
-            {company && (
-              <span>
-                Alterar Status Da Empresa <b>{company.name}</b>?
-              </span>
-            )}
-          </div>
-        </Dialog>
+      <StatusChange
+        headerStyle={statusChangeHeader(company)}
+        visible={statusCompanyDialog}
+        style={{ width: "32rem" }}
+        breakpoints={{ "960px": "75vw", "641px": "90vw" }}
+        header="Confirmar mudança de status da Empresa"
+        modal
+        footer={statusChangeDialogFooter}
+        onHide={hideStatusCompanyDialog}
+      >
+        <Text>
+          <i
+            className="pi pi-info-circle"
+            style={{
+              fontSize: "2rem",
+              margin: ".5rem",
+              verticalAlign: "middle",
+            }}
+          />
+          {company.status == "Active" ? (
+            <span>
+              Desativar Empresa <b>{company.id}</b>
+            </span>
+          ) : (
+            <span>
+              Ativar Empresa <b>{company.id}</b>
+            </span>
+          )}
+        </Text>
       </StatusChange>
     </div>
   );
