@@ -9,7 +9,6 @@ import { TabView, TabPanel } from "primereact/tabview";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { Tag } from "primereact/tag";
-import { useAxios } from "../../../../hooks/useAxios";
 import { CompanyContext } from "../../context/CompanyContext";
 import { Avatar } from "primereact/avatar";
 import { Accordion, AccordionTab } from "primereact/accordion";
@@ -27,11 +26,7 @@ import { InputNumber } from "primereact/inputnumber";
 // import { InputText } from "primereact/inputtext";
 import { InputMask } from "primereact/inputmask";
 import "primeicons/primeicons.css";
-// import { useAxios } from "../../../../hooks/useAxios";
-// import { useContext } from "react";
-// import { CompanyContext } from "../../context/CompanyContext";
 import { Message } from "primereact/message";
-// import { Toast } from "primereact/toast";
 
 import { useAddress } from "../../../../hooks/useAdrress";
 import { SpeedDial } from "primereact/speeddial";
@@ -60,19 +55,16 @@ import { useInputChange } from "../../hooks/useInputChange";
 import HeaderTable from "../../../../components/HeaderTable";
 import ButtonStatus from "../../../../components/ButtonStatus";
 import TableLoading from "../../../../components/TableLoading";
-import axios from "../../../../config/axios.config";
+import companyInstance from "../../../../config/axios.config";
+import { useAxios } from "../../../../hooks/useAxios";
 
 export default function Table() {
   const {
-    companies,
-    getCompanies,
-    delById,
-    createCompany,
-    updateCompany,
-    getPeopleInCompany,
-    changeStatus,
-    people,
-    status,
+    data: companies,
+    setData: setCompanies,
+    loading,
+    error,
+    fetch,
   } = useAxios();
 
   const {
@@ -91,8 +83,10 @@ export default function Table() {
   } = useInputChange();
 
   const { emptyCompany, company, setCompany } = useContext(CompanyContext);
+  // const [companies, setCompanies] = useState(data);
+  // const [loadingButton, setLoadingButton] = useState(false);
+
   const { address, setAddress, getAdrres } = useAddress();
-  const [loading, setLoading] = useState(true);
   const [createCompanyDialog, setCreateCompanyDialog] = useState(false);
   const [editCompanyDialog, setEditCompanyDialog] = useState(false);
   const [viewCompanyComplete, setViewCompanyComplete] = useState(false);
@@ -104,13 +98,22 @@ export default function Table() {
   // const { address, getAdrres } = useAddress();
   const toast = useRef(null);
   const dt = useRef(null);
-
   //-----CRUD------
   useEffect(() => {
-    setLoading(true);
-    getCompanies("Company");
-    setLoading(false);
+    fetch({
+      axiosInstance: companyInstance, // Sua instância do Axios
+      method: "GET",
+    });
   }, []);
+
+  const notification = (severity, summary, text) => {
+    toast.current.show({
+      severity: severity,
+      summary: summary,
+      detail: text,
+      life: 3000,
+    });
+  };
 
   const saveCreateCompany = () => {
     setSubmitted(true);
@@ -120,7 +123,7 @@ export default function Table() {
     if (_company.cnpj.length === 14 && _company.cnae.length === 7) {
       console.log("foi");
 
-      createCompany("Company", _company);
+      // createCompany("Company", _company);
       toast.current.show({
         severity: "success",
         summary: "Concluido",
@@ -143,58 +146,55 @@ export default function Table() {
     let _company = { ...company };
     delete _company.cnpj;
     delete _company.status;
-    updateCompany("Company", _company);
+    // updateCompany("Company", _company);
     // setCompanies(data);
     console.log(_company);
   };
 
   const deleteCompany = () => {
-    // let _companies = companies.filter((val) => val.id !== company.id);
-    delById("Company", company.id);
-    // getData("Company");
-    // console.log(data);
-
-    // setCompanies(data);
-
-    // console.log(data);
-    console.log(companies);
+    companyInstance
+      .delete(`${company.id}`)
+      .then(() => {
+        notification("success", "Concluido", "Empresa foi excluida");
+        const _companies = companies.filter((val) => val.id !== company.id);
+        setCompanies(_companies);
+      })
+      .catch(() => {
+        notification("error", "Erro", "não foi possivel excluir a empresa");
+      })
+      .finally(() => {
+        setCompany(emptyCompany);
+      });
 
     setDeleteCompanyDialog(false);
-    setCompany(emptyCompany);
-
-    toast.current.show({
-      severity: "success",
-      summary: "Successful",
-      detail: "Product Deleted",
-      life: 3000,
-    });
   };
 
   const toggleStatus = () => {
-    changeStatus("Company/ChangeStatus", company.id);
-    console.log(status);
-    if (status === 200) {
-      const index = companies.findIndex((i) => i.id === company.id);
-      console.log(company);
+    const updateStatus = () => {
+      const index = companies.findIndex((c) => c.id == company.id);
       const _company = { ...company };
-      if (_company.status === "Active") {
+      if (_company.status == "Active") {
         _company.status = "Inactive";
       } else {
         _company.status = "Active";
       }
-      if (index !== -1) {
-        companies[index] = _company;
-      }
-    }
-    setStatusCompanyDialog(false);
-    setCompany(emptyCompany);
+      companies[index] = _company;
+      console.log(companies);
+    };
 
-    toast.current.show({
-      severity: "success",
-      summary: "Concluido",
-      detail: "Status Alterado",
-      life: 3000,
-    });
+    companyInstance
+      .put(`ChangeStatus/${company.id}`)
+      .then((res) => {
+        updateStatus();
+        notification("success", "Concluido", "Status Alterado");
+      })
+      .catch((err) => {
+        notification("error", "Erro", "Status não pode ser alterado");
+      })
+      .finally(() => {
+        setCompany(emptyCompany);
+      });
+    setStatusCompanyDialog(false);
   };
 
   //----Open_Dialog-------
@@ -227,7 +227,7 @@ export default function Table() {
 
   const openViewCompanyComplete = (company) => {
     setCompany(company);
-    getPeopleInCompany("Company/FindAllPeopleInCompany", company.id);
+    // getPeopleInCompany("Company/FindAllPeopleInCompany", company.id);
     setViewCompanyComplete(true);
   };
 
@@ -473,7 +473,7 @@ export default function Table() {
         ) : (
           <DataTable
             value={companies}
-            // loading={true}
+            loading={loading}
             // selection={selectedCompanies}
             onSelectionChange={(e) => setSelectedCompanies(e.value)}
             dataKey="id"
@@ -1029,7 +1029,7 @@ export default function Table() {
         </Address>
       </EditCompany>
 
-      <ViewCompany
+      {/* <ViewCompany
         visible={viewCompanyComplete}
         style={{ width: "35rem" }}
         breakpoints={{ "960px": "75vw", "641px": "90vw" }}
@@ -1144,7 +1144,7 @@ export default function Table() {
             </PersonContainer>
           </TabPanel>
         </TabView>
-      </ViewCompany>
+      </ViewCompany> */}
 
       <DeleteCompany
         visible={deleteCompanyDialog}

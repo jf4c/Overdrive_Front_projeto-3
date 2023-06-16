@@ -1,79 +1,31 @@
 import { useState, useEffect } from "react";
-import axios from "../config/axios.config";
 
 export const useAxios = () => {
-  // const [data, setData] = useState([]);
-  const [companies, setCompanies] = useState([]);
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const [company, setCompany] = useState({});
-  const [people, setPeople] = useState([]);
-  const [status, setStatus] = useState("");
-  const [err, setErr] = useState(0);
-
-  const getCompanies = async (url) => {
-    await axios
-      .get(url)
-      .then((res) => {
-        setCompanies(res.data);
-      })
-      .catch();
-  };
-
-  const createCompany = async (url, company) => {
-    await axios.post(url, company, {
-      headers: {
-        accept: "text/plain",
-        "Content-Type": "application/json",
-      },
-    });
-  };
-
-  const updateCompany = async (url, company) => {
-    await axios.put(url, company, {
-      headers: {
-        accept: "text/plain",
-        "Content-Type": "application/json",
-      },
-    });
-  };
-
-  const getPeopleInCompany = async (url, id) => {
-    await axios
-      .get(`${url}/${id}`)
-      .then((res) => {
-        setPeople(res.data.peoples);
-        console.log(res.data.peoples);
-        console.log(people);
-      })
-      .catch();
-  };
-
-  const delById = async (url, id) => {
-    await axios.delete(`${url}/${id}`);
-  };
-
-  const changeStatus = async (url, id) => {
+  const fetch = async (configApi) => {
+    const { axiosInstance, method, url = "", requestConfig = {} } = configApi;
     try {
-      const res = await axios.put(`${url}/${id}`, {
-        headers: {
-          accept: "text/plain",
-          "Content-Type": "application/json",
-        },
+      setLoading(true);
+      const res = await axiosInstance[method.toLowerCase()](url, {
+        ...requestConfig,
       });
-      setStatus(res.status);
-    } catch {}
+      setData(res.data);
+    } catch (err) {
+      console.log(err.menssage);
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return {
-    companies,
-    getCompanies,
-    setCompanies,
-    status,
-    createCompany,
-    updateCompany,
-    delById,
-    changeStatus,
-    getPeopleInCompany,
-    people,
+    data,
+    setData,
+    loading,
+    error,
+    fetch,
   };
 };
