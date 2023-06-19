@@ -28,7 +28,7 @@ import { InputMask } from "primereact/inputmask";
 import "primeicons/primeicons.css";
 import { Message } from "primereact/message";
 
-import { useAddress } from "../../../../hooks/useAdrress";
+// import { useAddress } from "../../../../hooks/useAdrress";
 import { SpeedDial } from "primereact/speeddial";
 import {
   ActionTamplate,
@@ -49,13 +49,14 @@ import {
   Text,
   CalendarCreate,
   CalendarEdit,
+  AddressView,
 } from "./styles";
 import { useTemplate } from "../../../../hooks/useTemplate";
 import { useInputChange } from "../../hooks/useInputChange";
 import HeaderTable from "../../../../components/HeaderTable";
 import ButtonStatus from "../../../../components/ButtonStatus";
 import TableLoading from "../../../../components/TableLoading";
-import companyInstance from "../../../../config/axios.config";
+import { companyInstance } from "../../../../config/axios.config";
 import { useAxios } from "../../../../hooks/useAxios";
 
 export default function Table() {
@@ -86,7 +87,9 @@ export default function Table() {
   // const [companies, setCompanies] = useState(data);
   // const [loadingButton, setLoadingButton] = useState(false);
 
-  const { address, setAddress, getAdrres } = useAddress();
+  // const { address, setAddress, getAdrres } = useAddress();
+
+  const [people, setPeople] = useState([]);
   const [createCompanyDialog, setCreateCompanyDialog] = useState(false);
   const [editCompanyDialog, setEditCompanyDialog] = useState(false);
   const [viewCompanyComplete, setViewCompanyComplete] = useState(false);
@@ -97,7 +100,7 @@ export default function Table() {
   const [globalFilter, setGlobalFilter] = useState(null);
   // const { address, getAdrres } = useAddress();
   const toast = useRef(null);
-  const dt = useRef(null);
+  // const dt = useRef(null);
   //-----CRUD------
   useEffect(() => {
     fetch({
@@ -117,37 +120,119 @@ export default function Table() {
 
   const saveCreateCompany = () => {
     setSubmitted(true);
-    let _company = company;
-    console.log(_company);
+    let _company = { ...company };
+    let _address = { ...company.address };
 
-    if (_company.cnpj.length === 14 && _company.cnae.length === 7) {
-      console.log("foi");
+    Object.keys(_company).forEach((companyItem, i) => {
+      console.log(companyItem);
+      if (companyItem !== "address") {
+        if (_company[companyItem] == null) {
+          _company[companyItem] = "";
+        }
+      } else {
+        Object.keys(_address).forEach((addressItem) => {
+          if (_address[addressItem] == null) {
+            _address[addressItem] = "";
+            _company.address = { ..._address };
+          }
+        });
+      }
+      _company = { ..._company };
+    });
 
-      // createCompany("Company", _company);
-      toast.current.show({
-        severity: "success",
-        summary: "Concluido",
-        detail: "Empresa Criada",
-        life: 3000,
-      });
-
-      hideCreateDialog();
+    if (
+      _company.cnpj.length === 14 &&
+      _company.openingDate !== "" &&
+      _company.cnae.length === 7 &&
+      _address.cep.length === 8 &&
+      _address.number !== ""
+    ) {
+      companyInstance
+        .post("", _company)
+        .then((res) => {
+          // updateStatus();
+          console.log("criou");
+          notification("success", "Concluido", "Empresa criada");
+          hideCreateDialog();
+        })
+        .catch((err) => {
+          console.log(err.response.data);
+          notification("error", "Erro", err.response.data.split(":")[1]);
+        })
+        .finally(() => {
+          // setCompany(emptyCompany);
+        });
     } else {
-      toast.current.show({
-        severity: "error",
-        summary: "Erro",
-        detail: "Empresa nao foi Criada",
-        life: 3000,
-      });
+      notification("error", "Erro", "Não foi possivel criar a empresa");
     }
   };
 
   const saveEditCompany = () => {
+    setSubmitted(true);
+    let _companies = [...companies];
     let _company = { ...company };
+    let _address = { ...company.address };
+    const cnpj = _company.cnpj;
+    // const status = _company.status;
+
     delete _company.cnpj;
     delete _company.status;
-    // updateCompany("Company", _company);
-    // setCompanies(data);
+
+    console.log(_company);
+
+    const updateEdit = () => {
+      const index = companies.findIndex((c) => c.id == company.id);
+
+      companyInstance.get(`FindByCNPJ/${cnpj}`).then((res) => {
+        _companies[index] = { ...res.data };
+        console.log(res.data);
+        // notification("success", "Concluido", "A empresa foi editada");
+        setCompanies(_companies);
+      });
+    };
+
+    Object.keys(_company).forEach((companyItem) => {
+      console.log(companyItem);
+      if (companyItem !== "address") {
+        if (_company[companyItem] == "") {
+          _company[companyItem] = null;
+        }
+      } else {
+        Object.keys(_address).forEach((addressItem) => {
+          if (_address[addressItem] == "") {
+            _address[addressItem] = null;
+            _company.address = { ..._address };
+          }
+        });
+      }
+      _company = { ..._company };
+    });
+
+    if (
+      // _company.cnpj.length === 14 &&
+      _company.openingDate !== null &&
+      _company.cnae?.length === 7 &&
+      _address.cep?.length === 8 &&
+      _address.number !== null
+    ) {
+      companyInstance
+        .put("", _company)
+        .then((res) => {
+          updateEdit();
+          notification("success", "Concluido", "A empresa foi editada");
+          hideEditDialog();
+        })
+        .catch((err) => {
+          console.log(err.response.data);
+          notification("error", "Erro", err.response.data.split(":")[1]);
+        })
+        .finally(() => {
+          setCompany(emptyCompany);
+        });
+    } else {
+      notification("error", "Erro", "Não foi possivel editar a empresa");
+    }
+
     console.log(_company);
   };
 
@@ -200,13 +285,14 @@ export default function Table() {
   //----Open_Dialog-------
   const openCreateCompany = () => {
     setCompany(emptyCompany);
+    console.log(company.cnpj === null ? "" : company.cnpj);
     setSubmitted(false);
     setCreateCompanyDialog(true);
   };
 
   const openSaveEditCompany = (company) => {
     const date = new Date(company.openingDate);
-    let _company = company;
+    let _company = { ...company };
 
     _company.openingDate = date;
     console.log(company);
@@ -227,7 +313,14 @@ export default function Table() {
 
   const openViewCompanyComplete = (company) => {
     setCompany(company);
-    // getPeopleInCompany("Company/FindAllPeopleInCompany", company.id);
+    companyInstance
+      .get(`FindAllPeopleInCompany/${company.id}`)
+      .then((res) => {
+        setPeople(res.data.peoples);
+      })
+      .catch()
+      .finally();
+
     setViewCompanyComplete(true);
   };
 
@@ -241,7 +334,6 @@ export default function Table() {
   const hideEditDialog = () => {
     setSubmitted(false);
     setCompany(emptyCompany);
-    setAddress(null);
     setEditCompanyDialog(false);
   };
 
@@ -284,7 +376,12 @@ export default function Table() {
         outlined
         onClick={hideEditDialog}
       />
-      <Button label="Save" icon="pi pi-check" onClick={saveEditCompany} />
+      <Button
+        label="Save"
+        icon="pi pi-check"
+        onClick={saveEditCompany}
+        severity="warning"
+      />
     </React.Fragment>
   );
 
@@ -338,9 +435,10 @@ export default function Table() {
   const ViewCompanyDialogFooter = (
     <React.Fragment>
       <Button
-        label="Cancel"
+        label="Fechar"
         icon="pi pi-times"
         outlined
+        autoFocus
         onClick={hideViewCompanyComplete}
       />
     </React.Fragment>
@@ -559,7 +657,7 @@ export default function Table() {
             <span className="p-float-label">
               <InputText
                 id="companyName"
-                value={company.companyName}
+                value={company.companyName || ""}
                 onChange={(e) => onInputChange(e, "companyName")}
                 autoFocus
               />
@@ -572,7 +670,7 @@ export default function Table() {
             <span className="p-float-label">
               <InputText
                 id="tradingName"
-                value={company.tradingName}
+                value={company.tradingName || ""}
                 onChange={(e) => onInputChange(e, "tradingName")}
               />
               <label htmlFor="tradingName">Nome Fantazia</label>
@@ -585,12 +683,27 @@ export default function Table() {
               <CalendarCreate
                 id="openingDate"
                 onChange={(e) => onInputChange(e, "openingDate")}
-                value={company.openingDate}
+                value={company.openingDate || ""}
                 dateFormat="dd/mm/yy"
                 showIcon
+                required
+                className={classNames({
+                  "p-invalid": submitted && !company.openingDate,
+                })}
               />
               <label htmlFor="openingDate">Data de abertura</label>
             </span>
+            {submitted && !company.openingDate && (
+              <Message
+                style={{
+                  background: "none",
+                  justifyContent: "start",
+                  padding: "5px",
+                }}
+                severity="error"
+                text="Data de abertura é obrigatorio"
+              />
+            )}
           </InputContainer>
 
           {/* cnpj */}
@@ -600,14 +713,14 @@ export default function Table() {
                 id="cnpj"
                 mask="99.999.999/9999-99"
                 unmask={true}
-                value={company.cnpj}
+                value={company.cnpj || ""}
                 onChange={(e) => onInputChange(e, "cnpj")}
                 required
                 // autoClear={false}
                 className={classNames({
                   "p-invalid":
                     (submitted && !company.cnpj) ||
-                    (submitted && company.cnpj.length < 14),
+                    (submitted && company.cnpj?.length < 14),
                 })}
               />
               <label htmlFor="cnpj">CNPJ</label>
@@ -623,14 +736,14 @@ export default function Table() {
                 text="CNPJ é obrigatorio"
               />
             )}
-            {submitted && company.cnpj.length < 14 && (
+            {submitted && company.cnpj?.length < 14 && (
               <Message
                 style={{
                   background: "none",
                   justifyContent: "start",
                   padding: "5px",
                 }}
-                severity="error"
+                severity="info"
                 text="CNPJ tem 14 numeros."
               />
             )}
@@ -643,13 +756,10 @@ export default function Table() {
                 id="cnae"
                 mask="9999999"
                 onChange={(e) => onInputChange(e, "cnae")}
-                value={company.cnae}
+                value={company.cnae || ""}
                 required
                 className={classNames({
-                  "p-invalid":
-                    submitted &&
-                    !company.cnae &&
-                    (submitted && company.cnae.length) < 7,
+                  "p-invalid": submitted && !company.cnae,
                 })}
               />
               <label htmlFor="cnae">CNAE</label>
@@ -665,14 +775,14 @@ export default function Table() {
                 text="CNAE é obrigatório."
               />
             )}
-            {submitted && company.cnae.length < 7 && (
+            {submitted && company.cnae?.length < 7 && (
               <Message
                 style={{
                   background: "none",
                   justifyContent: "start",
                   padding: "5px",
                 }}
-                severity="error"
+                severity="info"
                 text="Minimo de 7 caracteres."
               />
             )}
@@ -683,7 +793,7 @@ export default function Table() {
             <span className="p-float-label">
               <InputText
                 id="legalNature"
-                value={company.legalNature}
+                value={company.legalNature || ""}
                 onChange={(e) => onInputChange(e, "legalNature")}
                 // autoFocus
               />
@@ -696,7 +806,7 @@ export default function Table() {
             <span className="p-float-label">
               <InputNumber
                 id="financeCapital"
-                value={company.financeCapital}
+                value={company.financeCapital || ""}
                 onValueChange={(e) => onInputNumberChange(e, "financeCapital")}
                 mode="currency"
                 currency="BRL"
@@ -714,12 +824,15 @@ export default function Table() {
           <InputContainer className="cep">
             <span className="p-float-label">
               <InputMask
-                id="companyName"
-                required
+                id="cep"
                 mask="99999-999"
                 unmask={true}
                 autoClear={false}
                 onChange={(e) => onChangeCep(e)}
+                required
+                className={classNames({
+                  "p-invalid": submitted && company.address.cep === null,
+                })}
               />
               <label htmlFor="cep">CEP</label>
             </span>
@@ -741,7 +854,7 @@ export default function Table() {
                   justifyContent: "start",
                   padding: "5px",
                 }}
-                severity="error"
+                severity="info"
                 text="Minimo de 7 caracteres."
               />
             )}
@@ -763,7 +876,7 @@ export default function Table() {
             <span className="p-float-label">
               <InputText
                 id="street"
-                value={company.address.street}
+                value={company.address.street || ""}
                 onChange={(e) => onInputAddressChange(e, "street")}
               />
 
@@ -775,11 +888,26 @@ export default function Table() {
             <span className="p-float-label">
               <InputNumber
                 id="number"
-                value={company.address.number}
+                value={company.address.number || ""}
                 onValueChange={(e) => onInputAddressChange(e, "number")}
+                required
+                className={classNames({
+                  "p-invalid": submitted && !company.address.number,
+                })}
               />
               <label htmlFor="number">Numero</label>
             </span>
+            {submitted && !company.address.number && (
+              <Message
+                style={{
+                  background: "none",
+                  justifyContent: "start",
+                  padding: "5px",
+                }}
+                severity="error"
+                text="Numero é obrigatório."
+              />
+            )}
           </InputContainer>
 
           {/* bairro */}
@@ -787,7 +915,7 @@ export default function Table() {
             <span className="p-float-label">
               <InputText
                 id="bairro"
-                value={company.address.bairro}
+                value={company.address.bairro || ""}
                 onChange={(e) => onInputAddressChange(e, "bairro")}
               />
               <label htmlFor="bairro">Bairro</label>
@@ -798,7 +926,7 @@ export default function Table() {
             <span className="p-float-label">
               <InputText
                 id="city"
-                value={company.address.city}
+                value={company.address.city || ""}
                 onChange={(e) => onInputAddressChange(e, "city")}
               />
               <label htmlFor="city">Cidade</label>
@@ -852,9 +980,24 @@ export default function Table() {
                 onChange={(e) => onInputChange(e, "openingDate")}
                 dateFormat="dd/mm/yy"
                 showIcon
+                required
+                className={classNames({
+                  "p-invalid": submitted && !company.openingDate,
+                })}
               />
               <label htmlFor="openingDate">Data de abertura</label>
             </span>
+            {submitted && !company.openingDate && (
+              <Message
+                style={{
+                  background: "none",
+                  justifyContent: "start",
+                  padding: "5px",
+                }}
+                severity="error"
+                text="Data de abertura é obrigatorio"
+              />
+            )}
           </InputContainer>
 
           {/* legalNature */}
@@ -880,10 +1023,7 @@ export default function Table() {
                 value={company.cnae}
                 required
                 className={classNames({
-                  "p-invalid":
-                    submitted &&
-                    !company.cnae &&
-                    (submitted && company.cnae.length) < 7,
+                  "p-invalid": submitted && !company.cnae,
                 })}
               />
               <label htmlFor="cnae">CNAE</label>
@@ -899,14 +1039,14 @@ export default function Table() {
                 text="CNAE é obrigatório."
               />
             )}
-            {submitted && company.cnae.length < 7 && (
+            {submitted && company.cnae?.length < 7 && (
               <Message
                 style={{
                   background: "none",
                   justifyContent: "start",
                   padding: "5px",
                 }}
-                severity="error"
+                severity="info"
                 text="Minimo de 7 caracteres."
               />
             )}
@@ -936,12 +1076,15 @@ export default function Table() {
             <span className="p-float-label">
               <InputMask
                 id="companyName"
-                required
                 mask="99999-999"
                 unmask={true}
                 autoClear={false}
                 value={company.address.cep}
-                onChange={(e) => onInputAddressChange(e)}
+                onChange={(e) => onChangeCep(e)}
+                required
+                className={classNames({
+                  "p-invalid": submitted && company.address.cep === null,
+                })}
               />
               <label htmlFor="cep">CEP</label>
             </span>
@@ -956,14 +1099,14 @@ export default function Table() {
                 text="CEP é obrigatório."
               />
             )}
-            {submitted && company.address.cep < 7 && (
+            {submitted && company.address.cep?.length < 7 && (
               <Message
                 style={{
                   background: "none",
                   justifyContent: "start",
                   padding: "5px",
                 }}
-                severity="error"
+                severity="info"
                 text="Minimo de 7 caracteres."
               />
             )}
@@ -999,9 +1142,24 @@ export default function Table() {
                 id="number"
                 value={company.address.number}
                 onValueChange={(e) => onInputAddressChange(e, "number")}
+                required
+                className={classNames({
+                  "p-invalid": submitted && !company.address.number,
+                })}
               />
               <label htmlFor="number">Numero</label>
             </span>
+            {submitted && !company.address.number && (
+              <Message
+                style={{
+                  background: "none",
+                  justifyContent: "start",
+                  padding: "5px",
+                }}
+                severity="error"
+                text="Numero é obrigatório."
+              />
+            )}
           </InputContainer>
 
           {/* bairro */}
@@ -1016,6 +1174,7 @@ export default function Table() {
             </span>
           </InputContainer>
 
+          {/* city */}
           <InputContainer className="city">
             <span className="p-float-label">
               <InputText
@@ -1029,7 +1188,7 @@ export default function Table() {
         </Address>
       </EditCompany>
 
-      {/* <ViewCompany
+      <ViewCompany
         visible={viewCompanyComplete}
         style={{ width: "35rem" }}
         breakpoints={{ "960px": "75vw", "641px": "90vw" }}
@@ -1085,7 +1244,7 @@ export default function Table() {
           </TabPanel>
 
           <TabPanel header={addressHeader}>
-            <Address>
+            <AddressView>
               <TextData data={company.address.cep} name="CEP" className="cep" />
               <TextData
                 data={company.address.street}
@@ -1110,41 +1269,45 @@ export default function Table() {
                 name="Cidade"
                 className="city"
               />
-            </Address>
+            </AddressView>
           </TabPanel>
           <TabPanel header={peopleHeader}>
-            <PersonContainer>
-              {people.map((person) => (
-                <Person>
-                  <Avatar icon="pi pi-user" shape="circle" />
-                  <div>
-                    <PersonData>
-                      <label>Nome:</label>
-                      <li>{person.name.split(" ")[0]}</li>
-                    </PersonData>
-                    <PersonData>
-                      <label>Usuario: </label>
-                      <li>{person.user}</li>
-                    </PersonData>
-                    <PersonData>
-                      <label>CPF: </label>
-                      <li>{person.cpf}</li>
-                    </PersonData>
-                    <PersonData>
-                      <label>RG: </label>
-                      <li>{person.rg}</li>
-                    </PersonData>
-                    <PersonData>
-                      <label>Tel: </label>
-                      <li>{person.phone}</li>
-                    </PersonData>
-                  </div>
-                </Person>
-              ))}
-            </PersonContainer>
+            {people.length === 0 ? (
+              <div> Sem Funcionarios</div>
+            ) : (
+              <PersonContainer>
+                {people.map((person, i) => (
+                  <Person>
+                    <Avatar icon="pi pi-user" shape="circle" />
+                    <div>
+                      <PersonData>
+                        <label>Nome:</label>
+                        <li key={i}>{person.name.split(" ")[0]}</li>
+                      </PersonData>
+                      <PersonData>
+                        <label>Usuario: </label>
+                        <li key={i}>{person.user}</li>
+                      </PersonData>
+                      <PersonData>
+                        <label>CPF: </label>
+                        <li key={i}>{person.cpf}</li>
+                      </PersonData>
+                      <PersonData>
+                        <label>RG: </label>
+                        <li key={i}>{person.rg}</li>
+                      </PersonData>
+                      <PersonData>
+                        <label>Tel: </label>
+                        <li key={i}>{person.phone}</li>
+                      </PersonData>
+                    </div>
+                  </Person>
+                ))}
+              </PersonContainer>
+            )}
           </TabPanel>
         </TabView>
-      </ViewCompany> */}
+      </ViewCompany>
 
       <DeleteCompany
         visible={deleteCompanyDialog}
@@ -1166,18 +1329,6 @@ export default function Table() {
           />
           <span>Tem certeza que deseja deletar essa empresa</span>
         </Text>
-
-        {/* <div className="confirmation-content">
-          <i
-            className="pi pi-exclamation-triangle mr-3"
-            style={{ fontSize: "2rem" }}
-          />
-          {company && (
-            <span>
-              Are you sure you want to delete
-            </span>
-          )}
-        </div> */}
       </DeleteCompany>
 
       <StatusChange

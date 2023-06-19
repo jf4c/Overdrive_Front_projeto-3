@@ -2,11 +2,27 @@ import { useFormat } from "./useFormat";
 import { Tag } from "primereact/tag";
 
 export const useTemplate = () => {
-  const { formatCnpj, formatDate, formatCurrency, getSeverity, statusValue } =
-    useFormat();
+  const {
+    formatCnpj,
+    formatCPF,
+    formatRG,
+    formatDate,
+    formatPhone,
+    formatCurrency,
+    getSeverity,
+    statusValue,
+  } = useFormat();
 
   const cnpjBodyTemplate = (rowData) => {
     return formatCnpj(rowData.cnpj);
+  };
+
+  const cpfBodyTemplate = (rowData) => {
+    return formatCPF(rowData.cpf);
+  };
+
+  const rgBodyTemplate = (rowData) => {
+    return formatRG(rowData.rg);
   };
 
   const dateBodyTemplate = (rowData) => {
@@ -23,10 +39,17 @@ export const useTemplate = () => {
     );
   };
 
+  const phoneBodyTemplate = (rowData) => {
+    return formatPhone(rowData.phone);
+  };
+
   return {
     cnpjBodyTemplate,
+    cpfBodyTemplate,
+    rgBodyTemplate,
     dateBodyTemplate,
     priceBodyTemplate,
     statusBodyTemplate,
+    phoneBodyTemplate,
   };
 };

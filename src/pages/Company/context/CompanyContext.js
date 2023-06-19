@@ -10,7 +10,7 @@ export const CompanyContextProvider = ({ children }) => {
     tradingName: null,
     cnae: null,
     legalNature: null,
-    financeCapital: null,
+    financeCapital: 0,
     address: {
       cep: null,
       street: null,

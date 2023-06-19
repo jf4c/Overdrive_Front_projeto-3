@@ -10,7 +10,7 @@ const HeaderTable = ({ name, filter, open }) => {
         <i className="pi pi-search" />
         <InputText type="search" onInput={filter} placeholder="Search..." />
       </span>
-      <h4 classNames="m-0">{name}</h4>
+      <h4>{name}</h4>
       <Button label="New" icon="pi pi-plus" severity="success" onClick={open} />
     </Container>
   );

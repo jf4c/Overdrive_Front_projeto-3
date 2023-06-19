@@ -8,7 +8,7 @@ export const FooterBox = styled("footer", {
   display: "flex",
   width: "100%",
   justifyContent: "center",
-  position: "absolute",
+  // position: "absolute",
   bottom: "0px",
   padding: "1rem",
   backgroundColor: "#34f256",

@@ -31,7 +31,7 @@ export const Name = styled("label", {
   //   borderRadius: "5px",
 });
 
-export const Text = styled("Span", {
+export const Text = styled("span", {
   padding: "0.33rem 0.5rem",
   border: "1px solid #bbb",
   fontSize: "1.2rem",

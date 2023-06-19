@@ -25,14 +25,10 @@ const TableLoading = () => {
   return (
     <DataTable
       //   onSelectionChange={(e) => setSelectedCompanies(e.value)}
-      dataKey="id"
+      // dataKey="id"
       removableSort
       //   selectionMode="single"
       paginator
-      rows={10}
-      rowsPerPageOptions={[5, 10, 25]}
-      paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} companies"
       //   globalFilter={globalFilter}
       header={
         <HeaderTable

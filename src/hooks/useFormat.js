@@ -8,6 +8,24 @@ export const useFormat = () => {
     }
   };
 
+  const formatCPF = (cpf) => {
+    if (cpf) {
+      return cpf.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+    }
+  };
+
+  const formatRG = (rg) => {
+    if (rg) {
+      return rg.replace(/^(\d{2})(\d{3})(\d{3})(\d{1})/, "$1.$2.$3-$4");
+    }
+  };
+
+  const formatPhone = (phone) => {
+    if (phone) {
+      return phone.replace(/^(\d{2})(\d{1})(\d{4})(\d{4})/, "($1) $2 $3-$4");
+    }
+  };
+
   const formatDate = (date) => {
     if (date && typeof date == "string") {
       return date.split("T")[0].split("-").reverse().join("/");
@@ -57,6 +75,9 @@ export const useFormat = () => {
 
   return {
     formatCnpj,
+    formatCPF,
+    formatPhone,
+    formatRG,
     formatDate,
     formatCurrency,
     getSeverity,

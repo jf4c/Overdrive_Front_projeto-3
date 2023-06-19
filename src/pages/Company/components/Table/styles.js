@@ -94,6 +94,9 @@ export const ViewCompany = styled(Dialog, {
   "&.p-dialog .p-dialog-header .p-dialog-header-icon": {
     color: "$white",
   },
+  "&.p-dialog .p-dialog-content": {
+    padding: "0",
+  },
 });
 
 export const ActionTamplate = styled("div", {
@@ -158,9 +161,9 @@ export const InputContainer = styled("div", {
   },
   "&.street": {
     gridColumnStart: "1",
-    gridColumnEnd: "4",
+    gridColumnEnd: "3",
   },
-  "&.number": {},
+  "&.number": { gridColumnStart: "3", gridColumnEnd: "5" },
   "&.bairro": {
     gridColumnStart: "1",
     gridColumnEnd: "5",
@@ -244,7 +247,7 @@ export const PersonData = styled("div", {
   alignItems: "center",
 
   "& label": {
-    background: "$blue700",
+    background: "$blue500",
     color: "$grey200",
     padding: ".3rem",
     borderTopLeftRadius: "10px",
@@ -270,4 +273,14 @@ export const Address = styled("fieldset", {
     fontSize: "20px",
     marginLeft: "1rem",
   },
+});
+
+export const AddressView = styled("div", {
+  display: "grid",
+  gridTemplateColumns: "1fr 1fr 1fr 1fr",
+  "& .cep": { gridColumnStart: "1", gridColumnEnd: "5" },
+  "& .street": { gridColumnStart: "1", gridColumnEnd: "4" },
+  "& .number": { gridColumnStart: "4", gridColumnEnd: "5" },
+  "& .bairro": { gridColumnStart: "1", gridColumnEnd: "5" },
+  "& .city": { gridColumnStart: "1", gridColumnEnd: "5" },
 });
