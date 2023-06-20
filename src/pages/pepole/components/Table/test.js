@@ -1,24 +1,24 @@
-<CreateCompany
-  visible={createCompanyDialog}
+<Editperson
+  visible={editpersonDialog}
   style={{ width: "40rem" }}
   breakpoints={{ "960px": "75vw", "641px": "90vw" }}
-  header="Criar Empresa"
+  header={`Edite Empresa ${person.id}`}
   modal
   className="p-fluid"
-  footer={createCompanyDialogFooter}
-  onHide={hideCreateDialog}
+  footer={editpersonDialogFooter}
+  onHide={hideEditDialog}
 >
-  <Company>
-    {/* companyName */}
-    <InputContainer className="companyName">
+  <person>
+    {/* personName */}
+    <InputContainer className="personName">
       <span className="p-float-label">
         <InputText
-          id="companyName"
-          value={company.companyName}
-          onChange={(e) => onInputChange(e, "companyName")}
+          id="personName"
+          value={person.personName}
+          onChange={(e) => onInputChange(e, "personName")}
           autoFocus
         />
-        <label htmlFor="companyName">Nome da Empresa</label>
+        <label htmlFor="personName">Nome da Empresa</label>
       </span>
     </InputContainer>
 
@@ -27,7 +27,7 @@
       <span className="p-float-label">
         <InputText
           id="tradingName"
-          value={company.tradingName}
+          value={person.tradingName}
           onChange={(e) => onInputChange(e, "tradingName")}
         />
         <label htmlFor="tradingName">Nome Fantazia</label>
@@ -37,20 +37,20 @@
     {/* openingDate */}
     <InputContainer className="openingDate">
       <span className="p-float-label">
-        <CalendarCreate
+        <CalendarEdit
           id="openingDate"
+          value={person.openingDate}
           onChange={(e) => onInputChange(e, "openingDate")}
-          value={company.openingDate}
           dateFormat="dd/mm/yy"
           showIcon
           required
           className={classNames({
-            "p-invalid": submitted && !company.openingDate,
+            "p-invalid": submitted && !person.openingDate,
           })}
         />
         <label htmlFor="openingDate">Data de abertura</label>
       </span>
-      {submitted && !company.openingDate && (
+      {submitted && !person.openingDate && (
         <Message
           style={{
             background: "none",
@@ -63,47 +63,17 @@
       )}
     </InputContainer>
 
-    {/* cnpj */}
-    <InputContainer className="cnpj">
+    {/* legalNature */}
+    <InputContainer className="legalNature">
       <span className="p-float-label">
-        <InputMask
-          id="cnpj"
-          mask="99.999.999/9999-99"
-          unmask={true}
-          value={company.cnpj}
-          onChange={(e) => onInputChange(e, "cnpj")}
-          required
-          // autoClear={false}
-          className={classNames({
-            "p-invalid":
-              (submitted && !company.cnpj) ||
-              (submitted && company.cnpj?.length < 14),
-          })}
+        <InputText
+          id="legalNature"
+          value={person.legalNature}
+          onChange={(e) => onInputChange(e, "legalNature")}
+          // autoFocus
         />
-        <label htmlFor="cnpj">CNPJ</label>
+        <label htmlFor="legalNature">Naturesa legal</label>
       </span>
-      {submitted && !company.cnpj && (
-        <Message
-          style={{
-            background: "none",
-            justifyContent: "start",
-            padding: "5px",
-          }}
-          severity="error"
-          text="CNPJ é obrigatorio"
-        />
-      )}
-      {submitted && company.cnpj?.length < 14 && (
-        <Message
-          style={{
-            background: "none",
-            justifyContent: "start",
-            padding: "5px",
-          }}
-          severity="info"
-          text="CNPJ tem 14 numeros."
-        />
-      )}
     </InputContainer>
 
     {/* cnae */}
@@ -113,15 +83,15 @@
           id="cnae"
           mask="9999999"
           onChange={(e) => onInputChange(e, "cnae")}
-          value={company.cnae}
+          value={person.cnae}
           required
           className={classNames({
-            "p-invalid": submitted && !company.cnae,
+            "p-invalid": submitted && !person.cnae,
           })}
         />
         <label htmlFor="cnae">CNAE</label>
       </span>
-      {submitted && !company.cnae && (
+      {submitted && !person.cnae && (
         <Message
           style={{
             background: "none",
@@ -132,7 +102,7 @@
           text="CNAE é obrigatório."
         />
       )}
-      {submitted && company.cnae?.length < 7 && (
+      {submitted && person.cnae?.length < 7 && (
         <Message
           style={{
             background: "none",
@@ -145,25 +115,12 @@
       )}
     </InputContainer>
 
-    {/* legalNature */}
-    <InputContainer className="legalNature">
-      <span className="p-float-label">
-        <InputText
-          id="legalNature"
-          value={company.legalNature}
-          onChange={(e) => onInputChange(e, "legalNature")}
-          // autoFocus
-        />
-        <label htmlFor="legalNature">Naturesa legal</label>
-      </span>
-    </InputContainer>
-
     {/* financeCapital */}
-    <InputContainer className="financeCapital">
+    <InputContainer className="financeCapitalEdit">
       <span className="p-float-label">
         <InputNumber
           id="financeCapital"
-          value={company.financeCapital}
+          value={person.financeCapital}
           onValueChange={(e) => onInputNumberChange(e, "financeCapital")}
           mode="currency"
           currency="BRL"
@@ -172,7 +129,7 @@
         <label htmlFor="financeCapital">Capital Financeiro</label>
       </span>
     </InputContainer>
-  </Company>
+  </person>
 
   <Address>
     <legend>Endereço da Empresa</legend>
@@ -181,19 +138,20 @@
     <InputContainer className="cep">
       <span className="p-float-label">
         <InputMask
-          id="cep"
+          id="personName"
           mask="99999-999"
           unmask={true}
           autoClear={false}
+          value={person.address.cep}
           onChange={(e) => onChangeCep(e)}
           required
           className={classNames({
-            "p-invalid": submitted && company.address.cep === null,
+            "p-invalid": submitted && person.address.cep === null,
           })}
         />
         <label htmlFor="cep">CEP</label>
       </span>
-      {submitted && !company.address.cep && (
+      {submitted && !person.address.cep && (
         <Message
           style={{
             background: "none",
@@ -204,7 +162,7 @@
           text="CEP é obrigatório."
         />
       )}
-      {submitted && company.address.cep < 7 && (
+      {submitted && person.address.cep?.length < 7 && (
         <Message
           style={{
             background: "none",
@@ -233,7 +191,7 @@
       <span className="p-float-label">
         <InputText
           id="street"
-          value={company.address.street}
+          value={person.address.street}
           onChange={(e) => onInputAddressChange(e, "street")}
         />
 
@@ -245,16 +203,16 @@
       <span className="p-float-label">
         <InputNumber
           id="number"
-          value={company.address.number}
+          value={person.address.number}
           onValueChange={(e) => onInputAddressChange(e, "number")}
           required
           className={classNames({
-            "p-invalid": submitted && !company.address.number,
+            "p-invalid": submitted && !person.address.number,
           })}
         />
         <label htmlFor="number">Numero</label>
       </span>
-      {submitted && !company.address.number && (
+      {submitted && !person.address.number && (
         <Message
           style={{
             background: "none",
@@ -272,22 +230,23 @@
       <span className="p-float-label">
         <InputText
           id="bairro"
-          value={company.address.bairro}
+          value={person.address.bairro}
           onChange={(e) => onInputAddressChange(e, "bairro")}
         />
         <label htmlFor="bairro">Bairro</label>
       </span>
     </InputContainer>
 
+    {/* city */}
     <InputContainer className="city">
       <span className="p-float-label">
         <InputText
           id="city"
-          value={company.address.city}
+          value={person.address.city}
           onChange={(e) => onInputAddressChange(e, "city")}
         />
         <label htmlFor="city">Cidade</label>
       </span>
     </InputContainer>
   </Address>
-</CreateCompany>;
+</Editperson>;

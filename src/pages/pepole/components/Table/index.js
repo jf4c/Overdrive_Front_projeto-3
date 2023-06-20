@@ -40,12 +40,12 @@ import {
   Person,
   PersonData,
   PersonContainer,
-  Createperson,
+  CreatePerson,
   person,
   StatusChange,
-  Deleteperson,
+  DeletePerson,
   Viewperson,
-  Editperson,
+  EditPerson,
   Text,
   CalendarCreate,
   CalendarEdit,
@@ -62,7 +62,7 @@ import { useAxios } from "../../../../hooks/useAxios";
 export default function Table() {
   const {
     data: people,
-    setData: setpeople,
+    setData: setPeople,
     loading,
     error,
     fetch,
@@ -85,9 +85,9 @@ export default function Table() {
 
   const { emptyPerson, person, setPerson } = useContext(PersonContext);
   const [createPersonDialog, setCreatePersonDialog] = useState(false);
-  const [editpersonDialog, setEditpersonDialog] = useState(false);
+  const [editPersonDialog, setEditPersonDialog] = useState(false);
   const [viewpersonComplete, setViewpersonComplete] = useState(false);
-  const [deletepersonDialog, setDeletepersonDialog] = useState(false);
+  const [deletePersonDialog, setdeletePersonDialog] = useState(false);
   const [statuspersonDialog, setStatuspersonDialog] = useState(false);
   const [selectedpeople, setSelectedpeople] = useState(null);
   const [submitted, setSubmitted] = useState(false);
@@ -112,41 +112,26 @@ export default function Table() {
     });
   };
 
-  const saveCreateperson = () => {
+  const saveCreatePerson = () => {
     setSubmitted(true);
+
+    let _people = [...people];
     let _person = { ...person };
-    let _address = { ...person.address };
 
-    Object.keys(_person).forEach((personItem, i) => {
-      console.log(personItem);
-      if (personItem !== "address") {
-        if (_person[personItem] == null) {
-          _person[personItem] = "";
-        }
-      } else {
-        Object.keys(_address).forEach((addressItem) => {
-          if (_address[addressItem] == null) {
-            _address[addressItem] = "";
-            _person.address = { ..._address };
-          }
-        });
-      }
-      _person = { ..._person };
-    });
+    const updateTable = (cpf) => {
+      personInstance.get(`FindByCPF/${cpf}`).then((res) => {
+        _people.push({ ...res.data });
+        setPeople(_people);
+      });
+    };
 
-    if (
-      _person.cnpj.length === 14 &&
-      _person.openingDate !== "" &&
-      _person.cnae.length === 7 &&
-      _address.cep.length === 8 &&
-      _address.number !== ""
-    ) {
+    if (_person.name && _person.cpf.length === 11 && _person.rg.length === 9) {
+      console.log("test");
       personInstance
         .post("", _person)
         .then((res) => {
-          // updateStatus();
-          console.log("criou");
-          notification("success", "Concluido", "Empresa criada");
+          updateTable(res.data.cpf);
+          notification("success", "Concluido", "Pessoa criada");
           hideCreateDialog();
         })
         .catch((err) => {
@@ -154,66 +139,55 @@ export default function Table() {
           notification("error", "Erro", err.response.data.split(":")[1]);
         })
         .finally(() => {
-          // setPerson(emptyPerson);
+          setPerson(emptyPerson);
         });
     } else {
       notification("error", "Erro", "Não foi possivel criar a empresa");
     }
   };
 
-  const saveEditperson = () => {
+  const saveEditPerson = () => {
     setSubmitted(true);
+
     let _people = [...people];
     let _person = { ...person };
-    let _address = { ...person.address };
-    const cnpj = _person.cnpj;
+    const cpf = _person.cpf;
     // const status = _person.status;
 
-    delete _person.cnpj;
-    delete _person.status;
+    delete _person.rg;
+    delete _person.cpf;
 
     console.log(_person);
 
-    const updateEdit = () => {
-      const index = people.findIndex((c) => c.id == person.id);
-
-      personInstance.get(`FindByCNPJ/${cnpj}`).then((res) => {
-        _people[index] = { ...res.data };
-        console.log(res.data);
-        // notification("success", "Concluido", "A empresa foi editada");
-        setpeople(_people);
-      });
-    };
-
     Object.keys(_person).forEach((personItem) => {
       console.log(personItem);
-      if (personItem !== "address") {
-        if (_person[personItem] == "") {
-          _person[personItem] = null;
-        }
-      } else {
-        Object.keys(_address).forEach((addressItem) => {
-          if (_address[addressItem] == "") {
-            _address[addressItem] = null;
-            _person.address = { ..._address };
-          }
-        });
+
+      if (_person[personItem] == "") {
+        _person[personItem] = null;
       }
+
       _person = { ..._person };
     });
 
-    if (
-      // _person.cnpj.length === 14 &&
-      _person.openingDate !== null &&
-      _person.cnae?.length === 7 &&
-      _address.cep?.length === 8 &&
-      _address.number !== null
-    ) {
+    const updateTable = () => {
+      const index = people.findIndex((p) => p.id == person.id);
+      personInstance.get(`FindByCPF/${cpf}`).then((res) => {
+        _people[index] = { ...res.data };
+        console.log(res.data);
+        setPeople(_people);
+      });
+    };
+
+    if (_person.name) {
       personInstance
         .put("", _person)
         .then((res) => {
-          updateEdit();
-          notification("success", "Concluido", "A empresa foi editada");
+          updateTable();
+          notification(
+            "success",
+            "Concluido",
+            "dados da pessoa foram editados"
+          );
           hideEditDialog();
         })
         .catch((err) => {
@@ -224,28 +198,28 @@ export default function Table() {
           setPerson(emptyPerson);
         });
     } else {
-      notification("error", "Erro", "Não foi possivel editar a empresa");
+      notification("error", "Erro", "Não foi possivel editar a pessoa");
     }
 
     console.log(_person);
   };
 
-  const deleteperson = () => {
+  const deletePerson = () => {
     personInstance
       .delete(`${person.id}`)
       .then(() => {
-        notification("success", "Concluido", "Empresa foi excluida");
+        notification("success", "Concluido", "Pessoa foi excluida");
         const _people = people.filter((val) => val.id !== person.id);
-        setpeople(_people);
+        setPeople(_people);
       })
       .catch(() => {
-        notification("error", "Erro", "não foi possivel excluir a empresa");
+        notification("error", "Erro", "não foi possivel excluir essa pessoa");
       })
       .finally(() => {
         setPerson(emptyPerson);
       });
 
-    setDeletepersonDialog(false);
+    setdeletePersonDialog(false);
   };
 
   const toggleStatus = () => {
@@ -284,7 +258,7 @@ export default function Table() {
     setCreatePersonDialog(true);
   };
 
-  const openSaveEditperson = (person) => {
+  const openSaveEditPerson = (person) => {
     const date = new Date(person.openingDate);
     let _person = { ...person };
 
@@ -292,12 +266,12 @@ export default function Table() {
     console.log(person);
     setPerson(_person);
     setSubmitted(false);
-    setEditpersonDialog(true);
+    setEditPersonDialog(true);
   };
 
-  const openConfirmDeleteperson = (person) => {
+  const openConfirmdeletePerson = (person) => {
     setPerson(person);
-    setDeletepersonDialog(true);
+    setdeletePersonDialog(true);
   };
 
   const openStatusChangeperson = (person) => {
@@ -328,11 +302,11 @@ export default function Table() {
   const hideEditDialog = () => {
     setSubmitted(false);
     setPerson(emptyPerson);
-    setEditpersonDialog(false);
+    setEditPersonDialog(false);
   };
 
-  const hideDeletepersonDialog = () => {
-    setDeletepersonDialog(false);
+  const hidedeletePersonDialog = () => {
+    setdeletePersonDialog(false);
   };
 
   const hideStatuspersonDialog = () => {
@@ -357,12 +331,12 @@ export default function Table() {
         label="Salvar"
         icon="pi pi-check"
         severity="success"
-        onClick={saveCreateperson}
+        onClick={saveCreatePerson}
       />
     </React.Fragment>
   );
 
-  const editpersonDialogFooter = (
+  const editPersonDialogFooter = (
     <React.Fragment>
       <Button
         label="Cancel"
@@ -373,26 +347,26 @@ export default function Table() {
       <Button
         label="Save"
         icon="pi pi-check"
-        onClick={saveEditperson}
+        onClick={saveEditPerson}
         severity="warning"
       />
     </React.Fragment>
   );
 
-  const deletepersonDialogFooter = (
+  const deletePersonDialogFooter = (
     <React.Fragment>
       <Button
         label="Cancelar"
         icon="pi pi-times"
         autoFocus
         outlined
-        onClick={hideDeletepersonDialog}
+        onClick={hidedeletePersonDialog}
       />
       <Button
         label="Deletar"
         icon="pi pi-check"
         severity="danger"
-        onClick={deleteperson}
+        onClick={deletePerson}
       />
     </React.Fragment>
   );
@@ -534,7 +508,7 @@ export default function Table() {
           // outlined
           className="mr-2"
           severity="warning"
-          onClick={() => openSaveEditperson(rowData)}
+          onClick={() => openSaveEditPerson(rowData)}
           tooltip="Editar"
           tooltipOptions={configTooltip}
         />
@@ -543,7 +517,7 @@ export default function Table() {
           rounded
           // outlined
           severity="danger"
-          onClick={() => openConfirmDeleteperson(rowData)}
+          onClick={() => openConfirmdeletePerson(rowData)}
           tooltip="Deletar"
           tooltipOptions={configTooltip}
         />
@@ -643,11 +617,11 @@ export default function Table() {
         )}
       </div>
 
-      <Createperson
+      <CreatePerson
         visible={createPersonDialog}
-        style={{ width: "40rem" }}
+        style={{ width: "30rem" }}
         breakpoints={{ "960px": "75vw", "641px": "90vw" }}
-        header="Criar Empresa"
+        header="Criar Pessoa"
         modal
         className="p-fluid"
         footer={createPersonDialogFooter}
@@ -662,9 +636,23 @@ export default function Table() {
                 value={person.name || ""}
                 onChange={(e) => onInputChange(e, "name")}
                 autoFocus
+                className={classNames({
+                  "p-invalid": submitted && !person.name,
+                })}
               />
               <label htmlFor="name">Nome</label>
             </span>
+            {submitted && !person.name && (
+              <Message
+                style={{
+                  background: "none",
+                  justifyContent: "start",
+                  padding: "5px",
+                }}
+                severity="error"
+                text="O nome é obrigatorio"
+              />
+            )}
           </InputContainer>
 
           {/* user */}
@@ -692,12 +680,23 @@ export default function Table() {
                 // autoClear={false}
                 className={classNames({
                   "p-invalid":
-                    (submitted && !person.cnpj) ||
-                    (submitted && person.cnpj?.length < 14),
+                    (submitted && !person.rg) ||
+                    (submitted && person.rg?.length < 9),
                 })}
               />
               <label htmlFor="rg">RG</label>
             </span>
+            {submitted && !person.rg && (
+              <Message
+                style={{
+                  background: "none",
+                  justifyContent: "start",
+                  padding: "5px",
+                }}
+                severity="error"
+                text="RG é obrigatorio"
+              />
+            )}
           </InputContainer>
 
           {/* cpf */}
@@ -707,19 +706,19 @@ export default function Table() {
                 id="cnpj"
                 mask="999.999.999-99"
                 unmask={true}
-                value={person.cnpj || ""}
+                value={person.cpf || ""}
                 onChange={(e) => onInputChange(e, "cpf")}
                 required
                 // autoClear={false}
                 className={classNames({
                   "p-invalid":
-                    (submitted && !person.cnpj) ||
-                    (submitted && person.cnpj?.length < 14),
+                    (submitted && !person.cpf) ||
+                    (submitted && person.cpf?.length < 11),
                 })}
               />
               <label htmlFor="cnpj">CPF</label>
             </span>
-            {submitted && !person.cnpj && (
+            {submitted && !person.cpf && (
               <Message
                 style={{
                   background: "none",
@@ -728,17 +727,6 @@ export default function Table() {
                 }}
                 severity="error"
                 text="CNPJ é obrigatorio"
-              />
-            )}
-            {submitted && person.cnpj?.length < 14 && (
-              <Message
-                style={{
-                  background: "none",
-                  justifyContent: "start",
-                  padding: "5px",
-                }}
-                severity="info"
-                text="CNPJ tem 14 numeros."
               />
             )}
           </InputContainer>
@@ -751,91 +739,39 @@ export default function Table() {
                 mask="(99) 9 9999-9999"
                 onChange={(e) => onInputChange(e, "phone")}
                 value={person.phone || ""}
-                className={classNames({
-                  "p-invalid": submitted && !person.cnae,
-                })}
               />
-              <label htmlFor="cnae">CNAE</label>
+              <label htmlFor="cnae">Telefone</label>
             </span>
-            {submitted && !person.cnae && (
-              <Message
-                style={{
-                  background: "none",
-                  justifyContent: "start",
-                  padding: "5px",
-                }}
-                severity="error"
-                text="CNAE é obrigatório."
-              />
-            )}
-            {submitted && person.cnae?.length < 7 && (
-              <Message
-                style={{
-                  background: "none",
-                  justifyContent: "start",
-                  padding: "5px",
-                }}
-                severity="info"
-                text="Minimo de 7 caracteres."
-              />
-            )}
           </InputContainer>
         </Person>
-      </Createperson>
+      </CreatePerson>
 
-      <Editperson
-        visible={editpersonDialog}
-        style={{ width: "40rem" }}
+      <EditPerson
+        visible={editPersonDialog}
+        style={{ width: "30rem" }}
         breakpoints={{ "960px": "75vw", "641px": "90vw" }}
-        header={`Edite Empresa ${person.id}`}
+        header="Criar Pessoa"
         modal
         className="p-fluid"
-        footer={editpersonDialogFooter}
+        footer={editPersonDialogFooter}
         onHide={hideEditDialog}
       >
-        <person>
-          {/* personName */}
-          <InputContainer className="personName">
+        <Person>
+          {/* name */}
+          <InputContainer className="name">
             <span className="p-float-label">
               <InputText
-                id="personName"
-                value={person.personName}
-                onChange={(e) => onInputChange(e, "personName")}
+                id="name"
+                value={person.name || ""}
+                onChange={(e) => onInputChange(e, "name")}
                 autoFocus
-              />
-              <label htmlFor="personName">Nome da Empresa</label>
-            </span>
-          </InputContainer>
-
-          {/* tradingName */}
-          <InputContainer className="tradingName">
-            <span className="p-float-label">
-              <InputText
-                id="tradingName"
-                value={person.tradingName}
-                onChange={(e) => onInputChange(e, "tradingName")}
-              />
-              <label htmlFor="tradingName">Nome Fantazia</label>
-            </span>
-          </InputContainer>
-
-          {/* openingDate */}
-          <InputContainer className="openingDate">
-            <span className="p-float-label">
-              <CalendarEdit
-                id="openingDate"
-                value={person.openingDate}
-                onChange={(e) => onInputChange(e, "openingDate")}
-                dateFormat="dd/mm/yy"
-                showIcon
-                required
                 className={classNames({
-                  "p-invalid": submitted && !person.openingDate,
+                  "p-invalid": submitted && !person.name,
                 })}
               />
-              <label htmlFor="openingDate">Data de abertura</label>
+              <label htmlFor="name">Nome</label>
             </span>
-            {submitted && !person.openingDate && (
+            {submitted && !person.name && (
               <Message
                 style={{
                   background: "none",
@@ -843,198 +779,37 @@ export default function Table() {
                   padding: "5px",
                 }}
                 severity="error"
-                text="Data de abertura é obrigatorio"
+                text="O nome é obrigatorio"
               />
             )}
           </InputContainer>
 
-          {/* legalNature */}
-          <InputContainer className="legalNature">
+          {/* user */}
+          <InputContainer className="user">
             <span className="p-float-label">
               <InputText
-                id="legalNature"
-                value={person.legalNature}
-                onChange={(e) => onInputChange(e, "legalNature")}
-                // autoFocus
+                id="user"
+                value={person.user || ""}
+                onChange={(e) => onInputChange(e, "user")}
               />
-              <label htmlFor="legalNature">Naturesa legal</label>
+              <label htmlFor="user">User</label>
             </span>
           </InputContainer>
 
-          {/* cnae */}
-          <InputContainer className="cnae">
+          {/* tel */}
+          <InputContainer className="phone">
             <span className="p-float-label">
               <InputMask
-                id="cnae"
-                mask="9999999"
-                onChange={(e) => onInputChange(e, "cnae")}
-                value={person.cnae}
-                required
-                className={classNames({
-                  "p-invalid": submitted && !person.cnae,
-                })}
+                id="phone"
+                mask="(99) 9 9999-9999"
+                onChange={(e) => onInputChange(e, "phone")}
+                value={person.phone || ""}
               />
-              <label htmlFor="cnae">CNAE</label>
-            </span>
-            {submitted && !person.cnae && (
-              <Message
-                style={{
-                  background: "none",
-                  justifyContent: "start",
-                  padding: "5px",
-                }}
-                severity="error"
-                text="CNAE é obrigatório."
-              />
-            )}
-            {submitted && person.cnae?.length < 7 && (
-              <Message
-                style={{
-                  background: "none",
-                  justifyContent: "start",
-                  padding: "5px",
-                }}
-                severity="info"
-                text="Minimo de 7 caracteres."
-              />
-            )}
-          </InputContainer>
-
-          {/* financeCapital */}
-          <InputContainer className="financeCapitalEdit">
-            <span className="p-float-label">
-              <InputNumber
-                id="financeCapital"
-                value={person.financeCapital}
-                onValueChange={(e) => onInputNumberChange(e, "financeCapital")}
-                mode="currency"
-                currency="BRL"
-                locale="pt-RS"
-              />
-              <label htmlFor="financeCapital">Capital Financeiro</label>
+              <label htmlFor="phone">Telefone</label>
             </span>
           </InputContainer>
-        </person>
-
-        <Address>
-          <legend>Endereço da Empresa</legend>
-          {/* cep */}
-
-          <InputContainer className="cep">
-            <span className="p-float-label">
-              <InputMask
-                id="personName"
-                mask="99999-999"
-                unmask={true}
-                autoClear={false}
-                value={person.address.cep}
-                onChange={(e) => onChangeCep(e)}
-                required
-                className={classNames({
-                  "p-invalid": submitted && person.address.cep === null,
-                })}
-              />
-              <label htmlFor="cep">CEP</label>
-            </span>
-            {submitted && !person.address.cep && (
-              <Message
-                style={{
-                  background: "none",
-                  justifyContent: "start",
-                  padding: "5px",
-                }}
-                severity="error"
-                text="CEP é obrigatório."
-              />
-            )}
-            {submitted && person.address.cep?.length < 7 && (
-              <Message
-                style={{
-                  background: "none",
-                  justifyContent: "start",
-                  padding: "5px",
-                }}
-                severity="info"
-                text="Minimo de 7 caracteres."
-              />
-            )}
-            {existCep == false && (
-              <Message
-                style={{
-                  background: "none",
-                  justifyContent: "start",
-                  padding: "5px",
-                }}
-                severity="error"
-                text="cep não encontrado "
-              />
-            )}
-          </InputContainer>
-
-          {/* street */}
-          <InputContainer className="street">
-            <span className="p-float-label">
-              <InputText
-                id="street"
-                value={person.address.street}
-                onChange={(e) => onInputAddressChange(e, "street")}
-              />
-
-              <label htmlFor="street">Rua</label>
-            </span>
-          </InputContainer>
-
-          <InputContainer className="number">
-            <span className="p-float-label">
-              <InputNumber
-                id="number"
-                value={person.address.number}
-                onValueChange={(e) => onInputAddressChange(e, "number")}
-                required
-                className={classNames({
-                  "p-invalid": submitted && !person.address.number,
-                })}
-              />
-              <label htmlFor="number">Numero</label>
-            </span>
-            {submitted && !person.address.number && (
-              <Message
-                style={{
-                  background: "none",
-                  justifyContent: "start",
-                  padding: "5px",
-                }}
-                severity="error"
-                text="Numero é obrigatório."
-              />
-            )}
-          </InputContainer>
-
-          {/* bairro */}
-          <InputContainer className="bairro">
-            <span className="p-float-label">
-              <InputText
-                id="bairro"
-                value={person.address.bairro}
-                onChange={(e) => onInputAddressChange(e, "bairro")}
-              />
-              <label htmlFor="bairro">Bairro</label>
-            </span>
-          </InputContainer>
-
-          {/* city */}
-          <InputContainer className="city">
-            <span className="p-float-label">
-              <InputText
-                id="city"
-                value={person.address.city}
-                onChange={(e) => onInputAddressChange(e, "city")}
-              />
-              <label htmlFor="city">Cidade</label>
-            </span>
-          </InputContainer>
-        </Address>
-      </Editperson>
+        </Person>
+      </EditPerson>
 
       {/* <Viewperson
         visible={viewpersonComplete}
@@ -1153,14 +928,14 @@ export default function Table() {
         </TabView>
       </Viewperson> */}
 
-      <Deleteperson
-        visible={deletepersonDialog}
+      <DeletePerson
+        visible={deletePersonDialog}
         style={{ width: "32rem" }}
         breakpoints={{ "960px": "75vw", "641px": "90vw" }}
         header="Deletar"
         modal
-        footer={deletepersonDialogFooter}
-        onHide={hideDeletepersonDialog}
+        footer={deletePersonDialogFooter}
+        onHide={hidedeletePersonDialog}
       >
         <Text>
           <i
@@ -1171,16 +946,16 @@ export default function Table() {
               verticalAlign: "middle",
             }}
           />
-          <span>Tem certeza que deseja deletar essa empresa</span>
+          <span>Tem certeza que deseja excluir essa pessoa</span>
         </Text>
-      </Deleteperson>
+      </DeletePerson>
 
       <StatusChange
         headerStyle={statusChangeHeader(person)}
         visible={statuspersonDialog}
         style={{ width: "32rem" }}
         breakpoints={{ "960px": "75vw", "641px": "90vw" }}
-        header="Confirmar mudança de status da Empresa"
+        header="Confirmar mudança de status da pessoa"
         modal
         footer={statusChangeDialogFooter}
         onHide={hideStatuspersonDialog}
@@ -1196,11 +971,11 @@ export default function Table() {
           />
           {person.status == "Active" ? (
             <span>
-              Desativar Empresa <b>{person.id}</b>
+              Desativar Pessoa <b>{person.id}</b>
             </span>
           ) : (
             <span>
-              Ativar Empresa <b>{person.id}</b>
+              Ativar Pessoa <b>{person.id}</b>
             </span>
           )}
         </Text>

@@ -12,6 +12,10 @@ const companyInstance = axiosConfig.create({
 
 const personInstance = axiosConfig.create({
   baseURL: "https://localhost:7134/api/v1/People",
+  headers: {
+    Accept: "text/plain",
+    "Content-Type": "application/json",
+  },
   // timeout: 1000,
 });
 

@@ -2,7 +2,7 @@ import { styled } from "../../../../config/stitches.config";
 import { Dialog } from "primereact/dialog";
 import { Calendar } from "primereact/calendar";
 
-export const Createperson = styled(Dialog, {
+export const CreatePerson = styled(Dialog, {
   "&.p-dialog .p-dialog-header": {
     background: "$green500",
     color: "$white",
@@ -23,7 +23,7 @@ export const CalendarCreate = styled(Calendar, {
   },
 });
 
-export const Editperson = styled(Dialog, {
+export const EditPerson = styled(Dialog, {
   "&.p-dialog .p-dialog-header": {
     background: "$yellow500",
     color: "$white",
@@ -44,7 +44,7 @@ export const CalendarEdit = styled(Calendar, {
   },
 });
 
-export const Deleteperson = styled(Dialog, {
+export const DeletePerson = styled(Dialog, {
   "&.p-dialog .p-dialog-header": {
     background: "$red500",
     color: "$white",
@@ -86,7 +86,7 @@ export const Text = styled("div", {
     verticalAlign: "middle",
   },
 });
-export const Viewperson = styled(Dialog, {
+export const ViewPerson = styled(Dialog, {
   "&.p-dialog .p-dialog-header": {
     background: "$blue500",
     color: "$white",
