@@ -2,7 +2,11 @@ import { styled } from "../../../../config/stitches.config";
 import { Dialog } from "primereact/dialog";
 import { Calendar } from "primereact/calendar";
 
-export const CreatePerson = styled(Dialog, {
+export const BoxTable = styled("div", {
+  height: "84vh",
+});
+
+export const CreateCompany = styled(Dialog, {
   "&.p-dialog .p-dialog-header": {
     background: "$green500",
     color: "$white",
@@ -23,7 +27,7 @@ export const CalendarCreate = styled(Calendar, {
   },
 });
 
-export const EditPerson = styled(Dialog, {
+export const EditCompany = styled(Dialog, {
   "&.p-dialog .p-dialog-header": {
     background: "$yellow500",
     color: "$white",
@@ -44,7 +48,7 @@ export const CalendarEdit = styled(Calendar, {
   },
 });
 
-export const DeletePerson = styled(Dialog, {
+export const DeleteCompany = styled(Dialog, {
   "&.p-dialog .p-dialog-header": {
     background: "$red500",
     color: "$white",
@@ -86,7 +90,7 @@ export const Text = styled("div", {
     verticalAlign: "middle",
   },
 });
-export const ViewPerson = styled(Dialog, {
+export const ViewCompany = styled(Dialog, {
   "&.p-dialog .p-dialog-header": {
     background: "$blue500",
     color: "$white",
@@ -105,10 +109,10 @@ export const ActionTamplate = styled("div", {
   alignItems: "center",
 });
 
-export const Person = styled("div", {
+export const Company = styled("div", {
   marginTop: "1rem",
   display: "grid",
-  // gridTemplateColumns: "1fr 1fr 1fr 1fr",
+  gridTemplateColumns: "1fr 1fr 1fr 1fr",
 });
 
 export const InputContainer = styled("div", {
@@ -121,12 +125,63 @@ export const InputContainer = styled("div", {
       top: "-0.95rem",
       left: "0.5rem",
     },
+
+  "&.companyName": {
+    gridColumnStart: "1",
+    gridColumnEnd: "5",
+  },
+  "&.tradingName": {
+    gridColumnStart: "1",
+    gridColumnEnd: "3",
+  },
+  "&.openingDate": {
+    gridColumnStart: "3",
+    gridColumnEnd: "5",
+  },
+  "&.cnpj": {
+    gridColumnStart: "1",
+    gridColumnEnd: "3",
+  },
+  "&.cnae": {
+    gridColumnStart: "3",
+    gridColumnEnd: "5",
+  },
+  "&.legalNature": {
+    gridColumnStart: "1",
+    gridColumnEnd: "3",
+  },
+  "&.financeCapital": {
+    gridColumnStart: "3",
+    gridColumnEnd: "5",
+  },
+  "&.financeCapitalEdit": {
+    gridColumnStart: "1",
+    gridColumnEnd: "5",
+  },
+
+  "&.cep": {
+    gridColumnStart: "1",
+    gridColumnEnd: "5",
+  },
+  "&.street": {
+    gridColumnStart: "1",
+    gridColumnEnd: "3",
+  },
+  "&.number": { gridColumnStart: "3", gridColumnEnd: "5" },
+  "&.bairro": {
+    gridColumnStart: "1",
+    gridColumnEnd: "5",
+  },
+  "&.city": {
+    gridColumnStart: "1",
+    gridColumnEnd: "5",
+  },
 });
 
 export const ViewData = styled("div", {
   display: "grid",
   gridTemplateColumns: "1fr 1fr 1fr 1fr",
-  "& .personName": {
+  "& .companyName": {
     gridColumnStart: "1",
     gridColumnEnd: "5",
   },
@@ -184,11 +239,11 @@ export const PersonContainer = styled("div", {
   justifyContent: "space-around",
 });
 
-// export const Person = styled("div", {
-//   display: "flex",
-//   margin: ".2rem",
-//   fontSize: "1.2rem",
-// });
+export const Person = styled("div", {
+  display: "flex",
+  margin: ".2rem",
+  fontSize: "1.2rem",
+});
 
 export const PersonData = styled("div", {
   display: "flex",

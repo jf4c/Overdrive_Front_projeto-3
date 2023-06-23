@@ -12,6 +12,7 @@ export const { styled, css, globalCss, theme } = createStitches({
       white: "#FFF",
       grey200: "#EEE",
       grey300: "#E0E0E0",
+      grey800: "#333",
     },
   },
 });

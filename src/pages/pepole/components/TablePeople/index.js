@@ -14,7 +14,6 @@ import { Avatar } from "primereact/avatar";
 import { Accordion, AccordionTab } from "primereact/accordion";
 import { Skeleton } from "primereact/skeleton";
 import TextData from "../../../../components/TextData";
-
 import { classNames } from "primereact/utils";
 
 // import { Dialog } from "primereact/dialog";
@@ -31,8 +30,11 @@ import { Message } from "primereact/message";
 // import { useAddress } from "../../../../hooks/useAdrress";
 import { SpeedDial } from "primereact/speeddial";
 import {
+  BoxTable,
+  Table,
   ActionTamplate,
   InputContainer,
+  CompanyListDialog,
   ViewData,
   Address,
   Icon,
@@ -44,7 +46,7 @@ import {
   person,
   StatusChange,
   DeletePerson,
-  Viewperson,
+  ViewPerson,
   EditPerson,
   Text,
   CalendarCreate,
@@ -56,10 +58,14 @@ import { useInputChange } from "../../hooks/useInputChange";
 import HeaderTable from "../../../../components/HeaderTable";
 import ButtonStatus from "../../../../components/ButtonStatus";
 import TableLoading from "../../../../components/TableLoading";
-import { personInstance } from "../../../../config/axios.config";
+import {
+  companyInstance,
+  personInstance,
+} from "../../../../config/axios.config";
 import { useAxios } from "../../../../hooks/useAxios";
+import CompanyList from "../../../pepole/components/CompanyList";
 
-export default function Table() {
+export default function TablePeople() {
   const {
     data: people,
     setData: setPeople,
@@ -85,8 +91,9 @@ export default function Table() {
 
   const { emptyPerson, person, setPerson } = useContext(PersonContext);
   const [createPersonDialog, setCreatePersonDialog] = useState(false);
+  const [companies, setCompanies] = useState([]);
   const [editPersonDialog, setEditPersonDialog] = useState(false);
-  const [viewpersonComplete, setViewpersonComplete] = useState(false);
+  const [companyListDialog, setCompanyListDialog] = useState(false);
   const [deletePersonDialog, setdeletePersonDialog] = useState(false);
   const [statuspersonDialog, setStatuspersonDialog] = useState(false);
   const [selectedpeople, setSelectedpeople] = useState(null);
@@ -279,17 +286,18 @@ export default function Table() {
     setStatuspersonDialog(true);
   };
 
-  const openViewpersonComplete = (person) => {
+  const openCompanyList = (person) => {
     setPerson(person);
-    personInstance
-      .get(`FindAllPeopleInperson/${person.id}`)
+    companyInstance
+      .get(``)
       .then((res) => {
-        // setPeople(res.data.peoples);
+        console.log(res.data);
+        setCompanies(res.data);
+        setCompanyListDialog(true);
+        console.log(companies);
       })
       .catch()
       .finally();
-
-    setViewpersonComplete(true);
   };
 
   //-----Hide_Dialog------
@@ -314,7 +322,7 @@ export default function Table() {
   };
 
   const hideViewpersonComplete = () => {
-    setViewpersonComplete(false);
+    setCompanyListDialog(false);
   };
 
   //-----Footer_Dialog------
@@ -493,12 +501,12 @@ export default function Table() {
         />
 
         <Button
-          icon="pi pi-search"
+          icon="pi pi-building"
           rounded
           // outlined
           // severity="warning"
-          onClick={() => openViewpersonComplete(rowData)}
-          tooltip="View"
+          onClick={() => openCompanyList(rowData)}
+          tooltip="Company"
           tooltipOptions={configTooltip}
         />
 
@@ -533,11 +541,11 @@ export default function Table() {
   return (
     <div>
       <Toast ref={toast} />
-      <div className="card">
+      <BoxTable>
         {loading ? (
           <TableLoading />
         ) : (
-          <DataTable
+          <Table
             value={people}
             loading={loading}
             // selection={selectedpeople}
@@ -547,6 +555,8 @@ export default function Table() {
             selectionMode="single"
             paginator
             rows={10}
+            scrollable
+            scrollHeight="flex"
             rowsPerPageOptions={[5, 10, 25]}
             paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
             currentPageReportTemplate="Showing {first} to {last} of {totalRecords} people"
@@ -613,9 +623,9 @@ export default function Table() {
               exportable={false}
               style={{ minWidth: "9rem" }}
             ></Column>
-          </DataTable>
+          </Table>
         )}
-      </div>
+      </BoxTable>
 
       <CreatePerson
         visible={createPersonDialog}
@@ -811,9 +821,9 @@ export default function Table() {
         </Person>
       </EditPerson>
 
-      {/* <Viewperson
-        visible={viewpersonComplete}
-        style={{ width: "35rem" }}
+      <CompanyListDialog
+        visible={companyListDialog}
+        style={{ width: "50rem" }}
         breakpoints={{ "960px": "75vw", "641px": "90vw" }}
         header={`Informações da empresa ${person.id}`}
         modal
@@ -821,112 +831,8 @@ export default function Table() {
         footer={ViewpersonDialogFooter}
         onHide={hideViewpersonComplete}
       >
-        <TabView>
-          <TabPanel header={personHeader}>
-            <ViewData>
-              <TextData
-                data={person.personName}
-                name="Nome Da empresa"
-                className="personName"
-              />
-              <TextData
-                data={person.tradingName}
-                name="Nome Fantazia"
-                className="tradingName"
-              />
-              <TextData data={person.status} name="Status" className="status" />
-
-              <TextData
-                data={cnpjBodyTemplate(person)}
-                name="CNPJ"
-                className="cnpj"
-              />
-              <TextData data={person.cnae} name="CNAE" className="cnae" />
-
-              <TextData
-                data={person.legalNature}
-                name="Natureza Legal"
-                className="legalNature"
-              />
-
-              <TextData
-                data={dateBodyTemplate(person)}
-                name="Data de Abertura"
-                className="openingDate"
-              />
-              <TextData
-                data={priceBodyTemplate(person)}
-                name="Capital Financeiro"
-                className="financeCapital"
-              />
-            </ViewData>
-          </TabPanel>
-
-          <TabPanel header={addressHeader}>
-            <AddressView>
-              <TextData data={person.address.cep} name="CEP" className="cep" />
-              <TextData
-                data={person.address.street}
-                name="Rua"
-                className="street"
-              />
-              <TextData
-                data={person.address.number}
-                icon="star"
-                name="Numero"
-                className="number"
-              />
-              <TextData
-                data={person.address.bairro}
-                icon="star"
-                name="Bairro"
-                className="bairro"
-              />
-
-              <TextData
-                data={person.address.city}
-                name="Cidade"
-                className="city"
-              />
-            </AddressView>
-          </TabPanel>
-          <TabPanel header={peopleHeader}>
-            {people.length === 0 ? (
-              <div> Sem Funcionarios</div>
-            ) : (
-              <PersonContainer>
-                {people.map((person, i) => (
-                  <Person>
-                    <Avatar icon="pi pi-user" shape="circle" />
-                    <div>
-                      <PersonData>
-                        <label>Nome:</label>
-                        <li key={i}>{person.name.split(" ")[0]}</li>
-                      </PersonData>
-                      <PersonData>
-                        <label>Usuario: </label>
-                        <li key={i}>{person.user}</li>
-                      </PersonData>
-                      <PersonData>
-                        <label>CPF: </label>
-                        <li key={i}>{person.cpf}</li>
-                      </PersonData>
-                      <PersonData>
-                        <label>RG: </label>
-                        <li key={i}>{person.rg}</li>
-                      </PersonData>
-                      <PersonData>
-                        <label>Tel: </label>
-                        <li key={i}>{person.phone}</li>
-                      </PersonData>
-                    </div>
-                  </Person>
-                ))}
-              </PersonContainer>
-            )}
-          </TabPanel>
-        </TabView>
-      </Viewperson> */}
+        <CompanyList value={companies} person={person} />
+      </CompanyListDialog>
 
       <DeletePerson
         visible={deletePersonDialog}

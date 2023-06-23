@@ -1,12 +1,12 @@
-import Table from "./components/Table";
 import React from "react";
 import { PersonContextProvider } from "./context/PersonContext";
+import TablePeople from "./components/TablePeople";
 
 const People = () => {
   return (
     <section>
       <PersonContextProvider>
-        <Table />
+        <TablePeople />
       </PersonContextProvider>
     </section>
   );

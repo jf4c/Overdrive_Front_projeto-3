@@ -50,6 +50,7 @@ import {
   CalendarCreate,
   CalendarEdit,
   AddressView,
+  BoxTable,
 } from "./styles";
 import { useTemplate } from "../../../../hooks/useTemplate";
 import { useInputChange } from "../../hooks/useInputChange";
@@ -59,7 +60,7 @@ import TableLoading from "../../../../components/TableLoading";
 import { companyInstance } from "../../../../config/axios.config";
 import { useAxios } from "../../../../hooks/useAxios";
 
-export default function Table() {
+export default function TableCompany() {
   const {
     data: companies,
     setData: setCompanies,
@@ -565,7 +566,7 @@ export default function Table() {
   return (
     <div>
       <Toast ref={toast} />
-      <div className="card">
+      <BoxTable className="card">
         {loading ? (
           <TableLoading />
         ) : (
@@ -578,6 +579,8 @@ export default function Table() {
             removableSort
             selectionMode="single"
             paginator
+            scrollable
+            scrollHeight="flex"
             rows={10}
             rowsPerPageOptions={[5, 10, 25]}
             paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
@@ -639,7 +642,7 @@ export default function Table() {
             ></Column>
           </DataTable>
         )}
-      </div>
+      </BoxTable>
 
       <CreateCompany
         visible={createCompanyDialog}

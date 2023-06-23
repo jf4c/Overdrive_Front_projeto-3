@@ -6,12 +6,11 @@ export const Title = styled("h1", {
 
 export const FooterBox = styled("footer", {
   display: "flex",
+  height: "8vh",
   width: "100%",
   justifyContent: "center",
-  // position: "absolute",
+  alignItems: "center",
   bottom: "0px",
-  padding: "1rem",
   backgroundColor: "#34f256",
   fontSize: "1rem",
-  //   marginTop: "1rem",
 });
