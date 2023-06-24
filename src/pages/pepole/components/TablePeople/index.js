@@ -66,13 +66,13 @@ import { useAxios } from "../../../../hooks/useAxios";
 import CompanyList from "../../../pepole/components/CompanyList";
 
 export default function TablePeople() {
-  const {
-    data: people,
-    setData: setPeople,
-    loading,
-    error,
-    fetch,
-  } = useAxios();
+  // const {
+  //   data: people,
+  //   setData: setPeople,
+  //   loading,
+  //   error,
+  //   fetch,
+  // } = useAxios();
 
   const {
     cpfBodyTemplate,
@@ -89,9 +89,11 @@ export default function TablePeople() {
     existCep,
   } = useInputChange();
 
-  const { emptyPerson, person, setPerson } = useContext(PersonContext);
-  const [createPersonDialog, setCreatePersonDialog] = useState(false);
+  const { emptyPerson, person, setPerson, people, setPeople } =
+    useContext(PersonContext);
   const [companies, setCompanies] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [createPersonDialog, setCreatePersonDialog] = useState(false);
   const [editPersonDialog, setEditPersonDialog] = useState(false);
   const [companyListDialog, setCompanyListDialog] = useState(false);
   const [deletePersonDialog, setdeletePersonDialog] = useState(false);
@@ -104,10 +106,22 @@ export default function TablePeople() {
   // const dt = useRef(null);
   //-----CRUD------
   useEffect(() => {
-    fetch({
-      axiosInstance: personInstance, // Sua instância do Axios
-      method: "GET",
-    });
+    personInstance
+      .get()
+      .then((res) => {
+        setLoading(true);
+
+        setPeople(res.data);
+      })
+      .catch()
+      .finally(() => {
+        setLoading(false);
+      });
+
+    // fetch({
+    //   axiosInstance: personInstance, // Sua instância do Axios
+    //   method: "GET",
+    // });
   }, []);
 
   const notification = (severity, summary, text) => {
@@ -291,10 +305,10 @@ export default function TablePeople() {
     companyInstance
       .get(``)
       .then((res) => {
-        console.log(res.data);
+        // console.log(res.data);
         setCompanies(res.data);
         setCompanyListDialog(true);
-        console.log(companies);
+        // console.log(companies);
       })
       .catch()
       .finally();
@@ -831,7 +845,7 @@ export default function TablePeople() {
         footer={ViewpersonDialogFooter}
         onHide={hideViewpersonComplete}
       >
-        <CompanyList value={companies} person={person} />
+        <CompanyList value={companies} personValue={person} />
       </CompanyListDialog>
 
       <DeletePerson

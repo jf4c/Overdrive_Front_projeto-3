@@ -3,7 +3,7 @@ import { DataView, DataViewLayoutOptions } from "primereact/dataview";
 import { Button } from "primereact/button";
 import { Tag } from "primereact/tag";
 
-import React, { useState } from "react";
+import React, { useContext, useRef, useState } from "react";
 import { useFormat } from "../../../../hooks/useFormat";
 import {
   Container,
@@ -19,14 +19,17 @@ import {
   ViewPerson,
   ViewCompany,
   TextView,
+  RemovePeopleInCompany,
 } from "./styles";
 import {
   companyInstance,
   personInstance,
 } from "../../../../config/axios.config";
 import TextData from "../../../../components/TextData";
+import { PersonContext } from "../../context/PersonContext";
+import { Toast } from "primereact/toast";
 
-const CompanyList = ({ value, person }) => {
+const CompanyList = ({ value, personValue }) => {
   const {
     getSeverity,
     formatCnpj,
@@ -37,18 +40,68 @@ const CompanyList = ({ value, person }) => {
   } = useFormat();
 
   const [company, setCompany] = useState(null);
+  const { person, setPerson, people, setPeople } = useContext(PersonContext);
   const [addPeopleInCompanyDialog, setAddPeopleInCompanyDialog] =
     useState(false);
+  const [removePeopleInCompanyDialog, setRemovePeopleInCompanyDialog] =
+    useState(false);
+  const toast = useRef(null);
+
+  const notification = (severity, summary, text) => {
+    toast.current.show({
+      severity: severity,
+      summary: summary,
+      detail: text,
+      life: 3000,
+    });
+  };
 
   const addPeopleInCompany = () => {
-    console.log(company);
-    console.log(person);
-    // personInstance
-    //   .put(`AddPeopleInCompany/${person.id}/${company.id}`)
-    //   .then((res) => {
-    //     console.log(res);
-    //     hideAddPeopleInCompanyDialog();
-    //   });
+    let _company = { ...company };
+    let _person = { ...person };
+    let _people = [...people];
+
+    _person.companyId = _company.id;
+    _person.company = _company;
+
+    const index = people.findIndex((p) => p.id == _person.id);
+    _people[index] = _person;
+
+    personInstance
+      .put(`AddPeopleInCompany/${person.id}/${company.id}`)
+      .then((res) => {
+        console.log(res.data.id);
+        setPerson(_person);
+        setPeople(_people);
+        console.log(_people);
+        console.log(_person);
+        notification(
+          "success",
+          "Concluido",
+          "A pessoa foi adicionada em empresa"
+        );
+        hideAddPeopleInCompanyDialog();
+      });
+  };
+
+  const removePeopleInCompany = () => {
+    let _person = { ...person };
+    let _people = [...people];
+
+    _person.companyId = null;
+    _person.company = null;
+
+    const index = people.findIndex((p) => p.id == _person.id);
+    _people[index] = _person;
+
+    personInstance.put(`RemovePeopleInCompany/${person.id}`).then(() => {
+      setPerson(_person);
+      setPeople(_people);
+      console.log(_people);
+      console.log(_person);
+      notification("success", "Concluido", "A pessoa foi removida da empresa");
+      hideRemovePeopleInCompanyDialog();
+    });
   };
 
   const openAddPeopleInCompanyDialog = (company) => {
@@ -56,8 +109,17 @@ const CompanyList = ({ value, person }) => {
     setAddPeopleInCompanyDialog(true);
   };
 
+  const openRemovePeopleInCompanyDialog = (company) => {
+    setCompany(company);
+    setRemovePeopleInCompanyDialog(true);
+  };
+
   const hideAddPeopleInCompanyDialog = () => {
     setAddPeopleInCompanyDialog(false);
+  };
+
+  const hideRemovePeopleInCompanyDialog = () => {
+    setRemovePeopleInCompanyDialog(false);
   };
 
   const addPeopleInCompanyDialogFooter = (
@@ -77,21 +139,21 @@ const CompanyList = ({ value, person }) => {
       />
     </React.Fragment>
   );
-
-  const propleHasCompany = (
+  const removePeopleInCompanyDialogFooter = (
     <React.Fragment>
       <Button
         label="Cancelar"
         icon="pi pi-times"
         autoFocus
         outlined
-        onClick={hideAddPeopleInCompanyDialog}
+        onClick={hideRemovePeopleInCompanyDialog}
       />
+
       <Button
-        label="Adicionar"
+        label="Remover"
         icon="pi pi-check"
-        severity="success"
-        onClick={addPeopleInCompany}
+        severity="danger"
+        onClick={removePeopleInCompany}
       />
     </React.Fragment>
   );
@@ -124,40 +186,13 @@ const CompanyList = ({ value, person }) => {
     );
   };
 
-  const companyMain = (company) => {
-    // return (
-    //     {person.companyId != null && <Container>
-    //         <Company>
-    //           <Icon className="pi pi-building"></Icon>
-    //           <CompanyInfo>
-    //             <Name>
-    //               <label htmlFor="">Nome:</label>
-    //               <span>{company.companyName}</span>
-    //             </Name>
-    //             <CNPJ>
-    //               <label htmlFor="">CNPJ:</label>
-    //               <span>{formatCnpj(company.cnpj)}</span>
-    //             </CNPJ>
-    //             <Tag value={company.status} severity={getSeverity(company)}></Tag>
-    //           </CompanyInfo>
-    //         </Company>
-    //         <Button
-    //           icon="pi pi-user-plus"
-    //           size="large"
-    //           className="p-button-rounded"
-    //           disabled={company.status !== "Active"}
-    //           onClick={() => openAddPeopleInCompanyDialog(company)}
-    //         ></Button>
-    //       </Container>}
-    // );
-  };
-
   return (
     <div>
+      <Toast ref={toast} />
       {person.companyId != null ? (
         <ViewData>
           <ViewPerson>
-            <IconView className="pi pi-user view"></IconView>
+            <IconView className="pi pi-id-card view"></IconView>
             <div className="info">
               <TextView>
                 <label htmlFor="">Nome:</label>
@@ -167,7 +202,6 @@ const CompanyList = ({ value, person }) => {
                 <label htmlFor="">CPF:</label>
                 <span>{formatCPF(person.cpf)}</span>
               </TextView>
-
               <TextView>
                 <label htmlFor="">RG:</label>
                 <span>{formatRG(person.rg)}</span>
@@ -184,33 +218,14 @@ const CompanyList = ({ value, person }) => {
               className="p-button-rounded"
               severity="danger"
               // disabled={company.status !== "Active"}
-              onClick={() => openAddPeopleInCompanyDialog(company)}
+              onClick={() => openRemovePeopleInCompanyDialog(company)}
             ></Button>
-
-            {/* <TextData data={person.name} name="Nome" className="companyName" />
-            <TextData
-              data={person.rg}
-              name="Nome Fantazia"
-              className="tradingName"
-            />
-            <TextData
-              data={
-                <Tag value={person.status} severity={getSeverity(person)}></Tag>
-              }
-              name="Status"
-              className="status"
-            />
-
-            <TextData
-              data={formatCnpj(person.company.cnpj)}
-              name="CNPJ"
-              className="cnpj"
-            /> */}
           </ViewPerson>
 
           <ViewCompany>
-            <IconView className="pi pi-building view"></IconView>
+            <h3>Empresa</h3>
             <TextData
+              icon="pi-briefcase"
               data={person.company.companyName}
               name="Nome Da empresa"
               className="companyName"
@@ -220,22 +235,6 @@ const CompanyList = ({ value, person }) => {
               name="Nome Fantazia"
               className="tradingName"
             />
-            <TextData
-              data={
-                <Tag
-                  value={person.company.status}
-                  severity={getSeverity(person.company)}
-                ></Tag>
-              }
-              name="Status"
-              className="status"
-            />
-
-            <TextData
-              data={formatCnpj(person.company.cnpj)}
-              name="CNPJ"
-              className="cnpj"
-            />
             <TextData data={person.company.cnae} name="CNAE" className="cnae" />
 
             <TextData
@@ -243,14 +242,23 @@ const CompanyList = ({ value, person }) => {
               name="Natureza Legal"
               className="legalNature"
             />
+            <TextData
+              icon="pi-building"
+              data={formatCnpj(person.company.cnpj)}
+              name="CNPJ"
+              className="cnpj"
+            />
 
             <TextData
+              icon="pi-calendar"
               data={formatDate(person.company.openingDate)}
-              name="Data de Abertura"
+              name="Abertura"
               className="openingDate"
             />
+
             <TextData
-              data={formatCurrency(person.company.captalFinance)}
+              icon="pi-dollar"
+              data={formatCurrency(person.company.financeCapital)}
               name="Capital Financeiro"
               className="financeCapital"
             />
@@ -281,6 +289,28 @@ const CompanyList = ({ value, person }) => {
           <span>Adicionar a pessoa {person.id} nessa impresa </span>
         </Text>
       </AddPeopleInCompany>
+
+      <RemovePeopleInCompany
+        visible={removePeopleInCompanyDialog}
+        style={{ width: "32rem" }}
+        breakpoints={{ "960px": "75vw", "641px": "90vw" }}
+        header="Remover pessoa da empresa"
+        modal
+        footer={removePeopleInCompanyDialogFooter}
+        onHide={hideRemovePeopleInCompanyDialog}
+      >
+        <Text>
+          <i
+            className="pi pi-info-circle"
+            style={{
+              fontSize: "2rem",
+              margin: ".5rem",
+              verticalAlign: "middle",
+            }}
+          />
+          <span>Adicionar a pessoa {person.id} nessa impresa </span>
+        </Text>
+      </RemovePeopleInCompany>
     </div>
   );
 };

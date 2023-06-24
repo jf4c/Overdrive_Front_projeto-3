@@ -552,6 +552,7 @@ export default function TableCompany() {
           severity="danger"
           onClick={() => openConfirmDeleteCompany(rowData)}
           tooltip="Deletar"
+          disabled={rowData.peoples.length > 0}
           tooltipOptions={configTooltip}
         />
       </ActionTamplate>

@@ -13,6 +13,18 @@ export const AddPeopleInCompany = styled(Dialog, {
     padding: "0",
   },
 });
+export const RemovePeopleInCompany = styled(Dialog, {
+  "&.p-dialog .p-dialog-header": {
+    background: "$blue500",
+    color: "$white",
+  },
+  "&.p-dialog .p-dialog-header .p-dialog-header-icon": {
+    color: "$white",
+  },
+  "&.p-dialog .p-dialog-content": {
+    padding: "0",
+  },
+});
 
 export const Text = styled("div", {
   textAlign: "center",
@@ -117,11 +129,11 @@ export const CNPJ = styled("div", {
 export const IconView = styled("i", {
   background: "$blue500",
   margin: "0.3rem",
-  padding: ".5rem .7rem",
-  borderRadius: "100%",
+  padding: ".4rem .6rem",
+  borderRadius: "10px",
   color: "$grey200",
   "&.pi": {
-    fontSize: "2rem",
+    fontSize: "4rem",
     // marginRight: "0.5rem",
     verticalAlign: "middle",
   },
@@ -130,6 +142,7 @@ export const IconView = styled("i", {
 export const ViewData = styled("div", {
   display: "flex",
   flexDirection: "column",
+  // justifyContent: "center",
   padding: "1rem",
 });
 
@@ -137,18 +150,58 @@ export const ViewPerson = styled("div", {
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
-  borderBottom: "1px solid #000",
+  borderBottom: "1px solid rgba(0,0,0,0.30)",
   paddingBottom: "1rem",
   "& .info": {
     display: "flex",
-    justifyContent: "space-around",
+    justifyContent: "center",
+    alignItems: "center",
     flexWrap: "wrap",
     flexDirection: "column",
-    width: "80%",
+    width: "75%",
     height: "100px",
   },
 });
 
 export const ViewCompany = styled("div", {
-  // padding: "1rem",
+  paddingTop: "1rem",
+  display: "grid",
+  gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr",
+  "& h3": {
+    gridColumnStart: "1",
+    gridColumnEnd: "6",
+    fontSize: "1.4rem",
+    textAlign: "center",
+  },
+  "& .companyName": {
+    gridColumnStart: "1",
+    gridColumnEnd: "4",
+  },
+  "& .tradingName": {
+    gridColumnStart: "4",
+    gridColumnEnd: "6",
+  },
+
+  "& .cnae": {
+    gridColumnStart: "1",
+    gridColumnEnd: "2",
+  },
+  "& .legalNature": {
+    gridColumnStart: "2",
+    gridColumnEnd: "3",
+  },
+
+  "& .cnpj": {
+    gridColumnStart: "3",
+    gridColumnEnd: "5",
+  },
+
+  "& .openingDate": {
+    gridColumnStart: "5",
+    gridColumnEnd: "6",
+  },
+  "& .financeCapital": {
+    gridColumnStart: "1",
+    gridColumnEnd: "6",
+  },
 });

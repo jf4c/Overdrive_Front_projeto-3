@@ -3,8 +3,10 @@ import { styled } from "../../config/stitches.config";
 export const Data = styled("div", {
   display: "flex",
   flexDirection: "column",
-  //   alignItems: "center",
   margin: "0.2rem ",
+  "& i": {
+    marginRight: ".2rem",
+  },
 });
 
 // export const Icon = styled("i", {

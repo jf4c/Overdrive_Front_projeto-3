@@ -12,11 +12,14 @@ export const PersonContextProvider = ({ children }) => {
   };
 
   const [person, setPerson] = useState(emptyPerson);
+  const [people, setPeople] = useState([]);
 
   const statesTable = {
     emptyPerson,
     person,
     setPerson,
+    people,
+    setPeople,
   };
 
   return (
