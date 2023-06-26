@@ -1,7 +1,6 @@
-import { useContext, useEffect, useState } from "react";
-import { useAxios } from "../../../hooks/useAxios";
+import { useContext, useState } from "react";
 import { CompanyContext } from "../context/CompanyContext";
-import { addressInstance } from "../../../config/axios.config";
+import { addressInstance } from "~/config/axios.config";
 
 export const useInputChange = () => {
   const emptyAddress = {
@@ -16,33 +15,23 @@ export const useInputChange = () => {
     siafi: null,
     uf: null,
   };
-  const { emptyCompany, company, setCompany } = useContext(CompanyContext);
+
+  const { company, setCompany } = useContext(CompanyContext);
   const [addressAPI, setAddressAPI] = useState(emptyAddress);
   const [cep, setCep] = useState(null);
   const [existCep, setExistCep] = useState(true);
 
-  // useEffect(() => {
-  //   if (cep) {
-  //     getAdrres(cep);
-  //   }
-  // }, [cep]);
-
   const onInputChange = (e, name) => {
     const val = (e.target && e.target.value) || "";
-
     let _company = { ...company };
-
     _company[`${name}`] = val;
-
     setCompany(_company);
   };
 
   const onInputNumberChange = (e, name) => {
     const val = e.value || 0;
     let _company = { ...company };
-
     _company[`${name}`] = val;
-
     setCompany(_company);
   };
 
@@ -56,7 +45,6 @@ export const useInputChange = () => {
     _address[`bairro`] = "";
     _address[`city`] = "";
     _company["address"] = _address;
-    // // console.log(_address);
     let _cep = e.target.value;
     if (_cep?.length != 8) {
       setExistCep(null);
@@ -70,16 +58,12 @@ export const useInputChange = () => {
         console.log(res.data?.erro);
         if (res.data?.erro !== true) {
           _addressAPI = { ...res.data };
-          // console.log({ ..._addressAPI });
-          // setAddressAPI(_addressAPI);
-          // console.log(addressAPI);
           _address[`cep`] = _cep;
           _address[`street`] = _addressAPI.logradouro;
           _address[`bairro`] = _addressAPI.bairro;
           _address[`city`] = _addressAPI.localidade;
           _company["address"] = _address;
         } else {
-          // console.log(err);
           setExistCep(false);
           _address[`street`] = "";
           _address[`bairro`] = "";

@@ -1,35 +1,28 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
-import { SplitButton } from "primereact/splitbutton";
 
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Button } from "primereact/button";
 import { Toast } from "primereact/toast";
 import { TabView, TabPanel } from "primereact/tabview";
-import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
-import { Tag } from "primereact/tag";
-import { CompanyContext } from "../../context/CompanyContext";
 import { Avatar } from "primereact/avatar";
-import { Accordion, AccordionTab } from "primereact/accordion";
-import { Skeleton } from "primereact/skeleton";
-import TextData from "../../../../components/TextData";
-
 import { classNames } from "primereact/utils";
-
-// import { Dialog } from "primereact/dialog";
-// import React, { useState, useRef, useEffect } from "react";
-// import { classNames } from "primereact/utils";
-import { Calendar } from "primereact/calendar";
-// import { Button } from "primereact/button";
 import { InputNumber } from "primereact/inputnumber";
-// import { InputText } from "primereact/inputtext";
 import { InputMask } from "primereact/inputmask";
-import "primeicons/primeicons.css";
 import { Message } from "primereact/message";
 
-// import { useAddress } from "../../../../hooks/useAdrress";
-import { SpeedDial } from "primereact/speeddial";
+import { companyInstance } from "~/config/axios.config";
+
+import { CompanyContext } from "~/pages/Company/context/CompanyContext";
+import { useInputChange } from "~/pages/Company/hooks/useInputChange";
+
+import TextData from "~/components/TextData";
+import HeaderTable from "~/components/HeaderTable";
+import TableLoading from "~/components/TableLoading";
+
+import { useTemplate } from "~/hooks/useTemplate";
+
 import {
   ActionTamplate,
   InputContainer,
@@ -52,62 +45,56 @@ import {
   AddressView,
   BoxTable,
 } from "./styles";
-import { useTemplate } from "../../../../hooks/useTemplate";
-import { useInputChange } from "../../hooks/useInputChange";
-import HeaderTable from "../../../../components/HeaderTable";
-import ButtonStatus from "../../../../components/ButtonStatus";
-import TableLoading from "../../../../components/TableLoading";
-import { companyInstance } from "../../../../config/axios.config";
-import { useAxios } from "../../../../hooks/useAxios";
 
 export default function TableCompany() {
-  const {
-    data: companies,
-    setData: setCompanies,
-    loading,
-    error,
-    fetch,
-  } = useAxios();
-
   const {
     cnpjBodyTemplate,
     dateBodyTemplate,
     priceBodyTemplate,
     statusBodyTemplate,
   } = useTemplate();
+
   const {
     onInputChange,
     onInputNumberChange,
     onInputAddressChange,
     onChangeCep,
-    cep,
     existCep,
   } = useInputChange();
 
-  const { emptyCompany, company, setCompany } = useContext(CompanyContext);
-  // const [companies, setCompanies] = useState(data);
-  // const [loadingButton, setLoadingButton] = useState(false);
-
-  // const { address, setAddress, getAdrres } = useAddress();
-
-  const [people, setPeople] = useState([]);
   const [createCompanyDialog, setCreateCompanyDialog] = useState(false);
   const [editCompanyDialog, setEditCompanyDialog] = useState(false);
   const [viewCompanyComplete, setViewCompanyComplete] = useState(false);
   const [deleteCompanyDialog, setDeleteCompanyDialog] = useState(false);
   const [statusCompanyDialog, setStatusCompanyDialog] = useState(false);
-  const [selectedCompanies, setSelectedCompanies] = useState(null);
+
+  const [companies, setCompanies] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState(false);
+
+  const [people, setPeople] = useState([]);
+
   const [submitted, setSubmitted] = useState(false);
+  const [selectedCompanies, setSelectedCompanies] = useState(null);
   const [globalFilter, setGlobalFilter] = useState(null);
-  // const { address, getAdrres } = useAddress();
+
+  const { emptyCompany, company, setCompany } = useContext(CompanyContext);
   const toast = useRef(null);
-  // const dt = useRef(null);
+
+  // addLocale("pt", pt);
+
   //-----CRUD------
   useEffect(() => {
-    fetch({
-      axiosInstance: companyInstance, // Sua instância do Axios
-      method: "GET",
-    });
+    companyInstance
+      .get()
+      .then((res) => {
+        setLoading(true);
+        setCompanies(res.data);
+      })
+      .catch()
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
   const notification = (severity, summary, text) => {
@@ -151,7 +138,6 @@ export default function TableCompany() {
       companyInstance
         .post("", _company)
         .then((res) => {
-          // updateStatus();
           console.log("criou");
           notification("success", "Concluido", "Empresa criada");
           hideCreateDialog();
@@ -161,7 +147,7 @@ export default function TableCompany() {
           notification("error", "Erro", err.response.data.split(":")[1]);
         })
         .finally(() => {
-          // setCompany(emptyCompany);
+          setCompany(emptyCompany);
         });
     } else {
       notification("error", "Erro", "Não foi possivel criar a empresa");
@@ -258,7 +244,7 @@ export default function TableCompany() {
   const toggleStatus = () => {
     const updateStatus = () => {
       const index = companies.findIndex((c) => c.id == company.id);
-      const _company = { ...company };
+      let _company = { ...company };
       if (_company.status == "Active") {
         _company.status = "Inactive";
       } else {
@@ -268,11 +254,36 @@ export default function TableCompany() {
       console.log(companies);
     };
 
+    const updateCompanies = () => {
+      let _companies = [...companies];
+      let _company = { ...company };
+      if (_company.status == "Active") {
+        _company.status = "Inactive";
+      } else {
+        _company.status = "Active";
+      }
+      const index = companies.findIndex((c) => c.id == company.id);
+      _company.peoples = [];
+      _companies[index] = _company;
+      setCompanies(_companies);
+    };
+
     companyInstance
       .put(`ChangeStatus/${company.id}`)
       .then((res) => {
         updateStatus();
         notification("success", "Concluido", "Status Alterado");
+      })
+      .then(() => {
+        if (company.peoples.length > 0) {
+          notification(
+            "info",
+            "Atençao",
+            "pessoa(as) foram retiradas da empresa"
+          );
+          updateCompanies();
+          console.log(company);
+        }
       })
       .catch((err) => {
         notification("error", "Erro", "Status não pode ser alterado");
@@ -508,8 +519,6 @@ export default function TableCompany() {
 
     const configTooltip = {
       position: "top",
-      // mouseTrack: true,
-      // mouseTrackTop: 15,
       showDelay: 800,
     };
 
@@ -528,8 +537,6 @@ export default function TableCompany() {
         <Button
           icon="pi pi-search"
           rounded
-          // outlined
-          // severity="warning"
           onClick={() => openViewCompanyComplete(rowData)}
           tooltip="View"
           tooltipOptions={configTooltip}
@@ -538,7 +545,6 @@ export default function TableCompany() {
         <Button
           icon="pi pi-pencil"
           rounded
-          // outlined
           className="mr-2"
           severity="warning"
           onClick={() => openSaveEditCompany(rowData)}
@@ -548,7 +554,6 @@ export default function TableCompany() {
         <Button
           icon="pi pi-trash"
           rounded
-          // outlined
           severity="danger"
           onClick={() => openConfirmDeleteCompany(rowData)}
           tooltip="Deletar"
@@ -573,8 +578,6 @@ export default function TableCompany() {
         ) : (
           <DataTable
             value={companies}
-            loading={loading}
-            // selection={selectedCompanies}
             onSelectionChange={(e) => setSelectedCompanies(e.value)}
             dataKey="id"
             removableSort
@@ -585,7 +588,7 @@ export default function TableCompany() {
             rows={10}
             rowsPerPageOptions={[5, 10, 25]}
             paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} companies"
+            currentPageReportTemplate="Numero de linhas:"
             globalFilter={globalFilter}
             header={
               <HeaderTable
@@ -604,14 +607,12 @@ export default function TableCompany() {
             <Column
               header="Nome Empresa"
               field="companyName"
-              // sortable
               style={{ minWidth: "16rem" }}
             ></Column>
             <Column
               header="CNPJ"
               field="cnpj"
               body={cnpjBodyTemplate}
-              // sortable
               style={{ minWidth: "8rem" }}
             ></Column>
             <Column
@@ -628,13 +629,12 @@ export default function TableCompany() {
               sortable
               style={{ minWidth: "8rem" }}
             ></Column>
-
             <Column
               header="Status"
               field="status"
               body={statusBodyTemplate}
               sortable
-              style={{ minWidth: "8rem" }}
+              style={{ minWidth: "5rem" }}
             ></Column>
             <Column
               body={actionBodyTemplate}
@@ -691,6 +691,7 @@ export default function TableCompany() {
                 dateFormat="dd/mm/yy"
                 showIcon
                 required
+                locale="pt"
                 className={classNames({
                   "p-invalid": submitted && !company.openingDate,
                 })}
@@ -720,7 +721,6 @@ export default function TableCompany() {
                 value={company.cnpj || ""}
                 onChange={(e) => onInputChange(e, "cnpj")}
                 required
-                // autoClear={false}
                 className={classNames({
                   "p-invalid":
                     (submitted && !company.cnpj) ||
@@ -985,6 +985,7 @@ export default function TableCompany() {
                 dateFormat="dd/mm/yy"
                 showIcon
                 required
+                locale="pt"
                 className={classNames({
                   "p-invalid": submitted && !company.openingDate,
                 })}
@@ -1216,7 +1217,7 @@ export default function TableCompany() {
                 className="tradingName"
               />
               <TextData
-                data={company.status}
+                data={statusBodyTemplate(company)}
                 name="Status"
                 className="status"
               />

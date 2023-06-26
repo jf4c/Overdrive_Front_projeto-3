@@ -5,3 +5,7 @@ export const Container = styled("div", {
   justifyContent: "space-between",
   alignItems: "center",
 });
+
+export const Text = styled("h2", {
+  fontSize: "1.6rem",
+});

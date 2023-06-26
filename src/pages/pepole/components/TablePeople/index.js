@@ -1,109 +1,65 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
-import { SplitButton } from "primereact/splitbutton";
 
-import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Button } from "primereact/button";
 import { Toast } from "primereact/toast";
-import { TabView, TabPanel } from "primereact/tabview";
-import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
-import { Tag } from "primereact/tag";
-import { PersonContext } from "../../context/PersonContext";
-import { Avatar } from "primereact/avatar";
-import { Accordion, AccordionTab } from "primereact/accordion";
-import { Skeleton } from "primereact/skeleton";
-import TextData from "../../../../components/TextData";
 import { classNames } from "primereact/utils";
-
-// import { Dialog } from "primereact/dialog";
-// import React, { useState, useRef, useEffect } from "react";
-// import { classNames } from "primereact/utils";
-import { Calendar } from "primereact/calendar";
-// import { Button } from "primereact/button";
-import { InputNumber } from "primereact/inputnumber";
-// import { InputText } from "primereact/inputtext";
 import { InputMask } from "primereact/inputmask";
-import "primeicons/primeicons.css";
 import { Message } from "primereact/message";
 
-// import { useAddress } from "../../../../hooks/useAdrress";
-import { SpeedDial } from "primereact/speeddial";
+import { companyInstance, personInstance } from "~/config/axios.config";
+
+import { PersonContext } from "~/pages/pepole/context/PersonContext";
+import { useInputChange } from "~/pages/pepole/hooks/useInputChange";
+import CompanyList from "~/pages/pepole/components/CompanyList";
+
+import HeaderTable from "~/components/HeaderTable";
+import TableLoading from "~/components/TableLoading";
+import { useTemplate } from "~/hooks/useTemplate";
+
 import {
-  BoxTable,
-  Table,
   ActionTamplate,
-  InputContainer,
-  CompanyListDialog,
-  ViewData,
-  Address,
-  Icon,
-  TextHeader,
-  Person,
-  PersonData,
-  PersonContainer,
+  BoxTable,
   CreatePerson,
-  person,
-  StatusChange,
+  CompanyListDialog,
   DeletePerson,
-  ViewPerson,
   EditPerson,
+  InputContainer,
+  Person,
+  StatusChange,
+  Table,
   Text,
-  CalendarCreate,
-  CalendarEdit,
-  AddressView,
 } from "./styles";
-import { useTemplate } from "../../../../hooks/useTemplate";
-import { useInputChange } from "../../hooks/useInputChange";
-import HeaderTable from "../../../../components/HeaderTable";
-import ButtonStatus from "../../../../components/ButtonStatus";
-import TableLoading from "../../../../components/TableLoading";
-import {
-  companyInstance,
-  personInstance,
-} from "../../../../config/axios.config";
-import { useAxios } from "../../../../hooks/useAxios";
-import CompanyList from "../../../pepole/components/CompanyList";
 
 export default function TablePeople() {
-  // const {
-  //   data: people,
-  //   setData: setPeople,
-  //   loading,
-  //   error,
-  //   fetch,
-  // } = useAxios();
-
   const {
     cpfBodyTemplate,
     rgBodyTemplate,
     phoneBodyTemplate,
     statusBodyTemplate,
   } = useTemplate();
-  const {
-    onInputChange,
-    onInputNumberChange,
-    onInputAddressChange,
-    onChangeCep,
-    cep,
-    existCep,
-  } = useInputChange();
 
-  const { emptyPerson, person, setPerson, people, setPeople } =
-    useContext(PersonContext);
-  const [companies, setCompanies] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const { onInputChange } = useInputChange();
+
   const [createPersonDialog, setCreatePersonDialog] = useState(false);
   const [editPersonDialog, setEditPersonDialog] = useState(false);
   const [companyListDialog, setCompanyListDialog] = useState(false);
   const [deletePersonDialog, setdeletePersonDialog] = useState(false);
-  const [statuspersonDialog, setStatuspersonDialog] = useState(false);
-  const [selectedpeople, setSelectedpeople] = useState(null);
+  const [statusPersonDialog, setStatuspersonDialog] = useState(false);
+
+  const [companies, setCompanies] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState(false);
+
   const [submitted, setSubmitted] = useState(false);
+  const [selectedpeople, setSelectedpeople] = useState(null);
   const [globalFilter, setGlobalFilter] = useState(null);
-  // const { address, getAdrres } = useAddress();
+
+  const { emptyPerson, person, setPerson, people, setPeople } =
+    useContext(PersonContext);
+
   const toast = useRef(null);
-  // const dt = useRef(null);
   //-----CRUD------
   useEffect(() => {
     personInstance
@@ -117,11 +73,6 @@ export default function TablePeople() {
       .finally(() => {
         setLoading(false);
       });
-
-    // fetch({
-    //   axiosInstance: personInstance, // Sua instância do Axios
-    //   method: "GET",
-    // });
   }, []);
 
   const notification = (severity, summary, text) => {
@@ -432,29 +383,6 @@ export default function TablePeople() {
         onClick={hideViewpersonComplete}
       />
     </React.Fragment>
-  );
-
-  //------Headers_Views--------
-
-  const personHeader = (
-    <div className="flex align-items-center">
-      <Icon className="pi pi-building"></Icon>
-      <TextHeader>Empresa</TextHeader>
-    </div>
-  );
-
-  const addressHeader = (
-    <div className="flex align-items-center">
-      <Icon className="pi pi-map-marker mr-2"></Icon>
-      <TextHeader>Endereço</TextHeader>
-    </div>
-  );
-
-  const peopleHeader = (
-    <div className="flex align-items-center">
-      <Icon className="pi pi-users mr-2"></Icon>
-      <TextHeader>Funcionarios</TextHeader>
-    </div>
   );
 
   //-----Action_Template------
@@ -872,7 +800,7 @@ export default function TablePeople() {
 
       <StatusChange
         headerStyle={statusChangeHeader(person)}
-        visible={statuspersonDialog}
+        visible={statusPersonDialog}
         style={{ width: "32rem" }}
         breakpoints={{ "960px": "75vw", "641px": "90vw" }}
         header="Confirmar mudança de status da pessoa"

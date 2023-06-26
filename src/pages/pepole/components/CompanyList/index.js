@@ -1,35 +1,37 @@
-import "primeflex/primeflex.css";
-import { DataView, DataViewLayoutOptions } from "primereact/dataview";
+// import "primeflex/primeflex.css";
+import React, { useContext, useRef, useState } from "react";
+
+import { DataView } from "primereact/dataview";
 import { Button } from "primereact/button";
 import { Tag } from "primereact/tag";
-
-import React, { useContext, useRef, useState } from "react";
-import { useFormat } from "../../../../hooks/useFormat";
-import {
-  Container,
-  Company,
-  Name,
-  Icon,
-  CompanyInfo,
-  CNPJ,
-  Text,
-  AddPeopleInCompany,
-  ViewData,
-  IconView,
-  ViewPerson,
-  ViewCompany,
-  TextView,
-  RemovePeopleInCompany,
-} from "./styles";
-import {
-  companyInstance,
-  personInstance,
-} from "../../../../config/axios.config";
-import TextData from "../../../../components/TextData";
-import { PersonContext } from "../../context/PersonContext";
 import { Toast } from "primereact/toast";
 
-const CompanyList = ({ value, personValue }) => {
+import { personInstance } from "~/config/axios.config";
+
+import { PersonContext } from "~/pages/pepole/context/PersonContext";
+
+import TextData from "~/components/TextData";
+
+import { useFormat } from "~/hooks/useFormat";
+
+import {
+  AddPeopleInCompany,
+  Container,
+  Company,
+  CompanyInfo,
+  CNPJ,
+  Icon,
+  IconView,
+  Name,
+  RemovePeopleInCompany,
+  Text,
+  TextView,
+  ViewData,
+  ViewPerson,
+  ViewCompany,
+} from "./styles";
+
+const CompanyList = ({ value }) => {
   const {
     getSeverity,
     formatCnpj,
@@ -39,12 +41,14 @@ const CompanyList = ({ value, personValue }) => {
     formatRG,
   } = useFormat();
 
-  const [company, setCompany] = useState(null);
-  const { person, setPerson, people, setPeople } = useContext(PersonContext);
   const [addPeopleInCompanyDialog, setAddPeopleInCompanyDialog] =
     useState(false);
   const [removePeopleInCompanyDialog, setRemovePeopleInCompanyDialog] =
     useState(false);
+
+  const [company, setCompany] = useState(null);
+
+  const { person, setPerson, people, setPeople } = useContext(PersonContext);
   const toast = useRef(null);
 
   const notification = (severity, summary, text) => {

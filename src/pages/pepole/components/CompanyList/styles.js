@@ -1,4 +1,4 @@
-import { styled } from "../../../../config/stitches.config";
+import { styled } from "~/config/stitches.config";
 import { Dialog } from "primereact/dialog";
 
 export const AddPeopleInCompany = styled(Dialog, {
@@ -13,6 +13,60 @@ export const AddPeopleInCompany = styled(Dialog, {
     padding: "0",
   },
 });
+
+export const Container = styled("div", {
+  display: "flex",
+  width: "100%",
+  justifyContent: "space-between",
+  alignItems: "center",
+  padding: "1rem",
+});
+
+export const Company = styled("div", {
+  display: "flex",
+  alignItems: "center",
+  width: "90%",
+  justifyContent: "space-between",
+});
+
+export const CompanyInfo = styled("i", {
+  //   display: "flex",
+  flexDirection: "column",
+  flexWrap: "wrap",
+  width: "80%",
+});
+
+export const CNPJ = styled("div", {
+  fontSize: "1rem",
+  paddingBottom: "1rem",
+  "& label": {
+    background: "$grey800",
+    color: "$grey200",
+    padding: "0.3rem",
+    borderTopLeftRadius: "5px",
+    borderBottomLeftRadius: "5px",
+    // marginRight: ".2rem",
+  },
+  "& span": {
+    border: "1px solid #000",
+    padding: "0.24rem",
+    borderTopRightRadius: "5px",
+    borderBottomRightRadius: "5px",
+  },
+});
+
+export const Icon = styled("i", {
+  background: "$grey800",
+  padding: "1.5rem 1.7rem",
+  borderRadius: "10px",
+  color: "$grey200",
+  "&.pi": {
+    fontSize: "3.8rem",
+    // marginRight: "0.5rem",
+    verticalAlign: "middle",
+  },
+});
+
 export const RemovePeopleInCompany = styled(Dialog, {
   "&.p-dialog .p-dialog-header": {
     background: "$blue500",
@@ -33,40 +87,6 @@ export const Text = styled("div", {
     fontSize: "1.2rem",
     verticalAlign: "middle",
   },
-});
-
-export const Container = styled("div", {
-  display: "flex",
-  width: "100%",
-  justifyContent: "space-between",
-  alignItems: "center",
-  padding: "1rem",
-});
-
-export const Company = styled("div", {
-  display: "flex",
-  alignItems: "center",
-  width: "90%",
-  justifyContent: "space-between",
-});
-
-export const Icon = styled("i", {
-  background: "$grey800",
-  padding: "1.5rem 1.7rem",
-  borderRadius: "10px",
-  color: "$grey200",
-  "&.pi": {
-    fontSize: "3.8rem",
-    // marginRight: "0.5rem",
-    verticalAlign: "middle",
-  },
-});
-
-export const CompanyInfo = styled("i", {
-  //   display: "flex",
-  flexDirection: "column",
-  flexWrap: "wrap",
-  width: "80%",
 });
 
 export const Name = styled("div", {
@@ -98,25 +118,6 @@ export const TextView = styled("div", {
     padding: "0.3rem",
     borderTopLeftRadius: "5px",
     borderBottomLeftRadius: "5px",
-  },
-  "& span": {
-    border: "1px solid #000",
-    padding: "0.24rem",
-    borderTopRightRadius: "5px",
-    borderBottomRightRadius: "5px",
-  },
-});
-
-export const CNPJ = styled("div", {
-  fontSize: "1rem",
-  paddingBottom: "1rem",
-  "& label": {
-    background: "$grey800",
-    color: "$grey200",
-    padding: "0.3rem",
-    borderTopLeftRadius: "5px",
-    borderBottomLeftRadius: "5px",
-    // marginRight: ".2rem",
   },
   "& span": {
     border: "1px solid #000",
