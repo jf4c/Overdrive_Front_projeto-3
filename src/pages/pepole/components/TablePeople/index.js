@@ -34,10 +34,13 @@ import {
 
 export default function TablePeople() {
   const {
+    nameBodyTemplate,
     cpfBodyTemplate,
     rgBodyTemplate,
     phoneBodyTemplate,
     statusBodyTemplate,
+    userBodyTemplate,
+    companyStatusBodyTemplate,
   } = useTemplate();
 
   const { onInputChange } = useInputChange();
@@ -60,6 +63,7 @@ export default function TablePeople() {
     useContext(PersonContext);
 
   const toast = useRef(null);
+
   //-----CRUD------
   useEffect(() => {
     personInstance
@@ -123,6 +127,7 @@ export default function TablePeople() {
 
     let _people = [...people];
     let _person = { ...person };
+    console.log(_person);
     const cpf = _person.cpf;
     // const status = _person.status;
 
@@ -197,7 +202,7 @@ export default function TablePeople() {
   const toggleStatus = () => {
     const updateStatus = () => {
       const index = people.findIndex((c) => c.id == person.id);
-      const _person = { ...person };
+      let _person = { ...person };
       if (_person.status == "Active") {
         _person.status = "Inactive";
       } else {
@@ -207,11 +212,37 @@ export default function TablePeople() {
       console.log(people);
     };
 
+    const updatePeople = () => {
+      const index = people.findIndex((c) => c.id == person.id);
+      let _people = [...people];
+      let _person = { ...person };
+      if (_person.status == "Active") {
+        _person.status = "Inactive";
+      } else {
+        _person.status = "Active";
+      }
+      _person.companyId = null;
+      _person.company = null;
+
+      _people[index] = _person;
+      setPeople(_people);
+    };
+
     personInstance
       .put(`ChangeStatus/${person.id}`)
       .then((res) => {
         updateStatus();
         notification("success", "Concluido", "Status Alterado");
+      })
+      .then(() => {
+        if (person.companyId !== null) {
+          notification(
+            "info",
+            "Atençao",
+            "Essa pessoa foi retirada da empresa"
+          );
+          updatePeople();
+        }
       })
       .catch((err) => {
         notification("error", "Erro", "Status não pode ser alterado");
@@ -445,8 +476,7 @@ export default function TablePeople() {
         <Button
           icon="pi pi-building"
           rounded
-          // outlined
-          // severity="warning"
+          disabled={rowData.status != "Active"}
           onClick={() => openCompanyList(rowData)}
           tooltip="Company"
           tooltipOptions={configTooltip}
@@ -489,7 +519,7 @@ export default function TablePeople() {
         ) : (
           <Table
             value={people}
-            loading={loading}
+            // loading={loading}
             // selection={selectedpeople}
             onSelectionChange={(e) => setSelectedpeople(e.value)}
             dataKey="id"
@@ -501,7 +531,7 @@ export default function TablePeople() {
             scrollHeight="flex"
             rowsPerPageOptions={[5, 10, 25]}
             paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} people"
+            currentPageReportTemplate="Numero de linhas:"
             globalFilter={globalFilter}
             header={
               <HeaderTable
@@ -520,14 +550,13 @@ export default function TablePeople() {
             <Column
               header="Nome"
               field="name"
-              // sortable
-              style={{ minWidth: "16rem" }}
+              body={nameBodyTemplate}
+              style={{ minWidth: "10rem" }}
             ></Column>
             <Column
               header="User"
               field="user"
-              // body={cnpjBodyTemplate}
-              // sortable
+              body={userBodyTemplate}
               style={{ minWidth: "8rem" }}
             ></Column>
             <Column
@@ -551,6 +580,14 @@ export default function TablePeople() {
               body={phoneBodyTemplate}
               sortable
               style={{ minWidth: "10rem" }}
+            ></Column>
+
+            <Column
+              header="Empresa"
+              field="companyId"
+              body={companyStatusBodyTemplate}
+              // sortable
+              style={{ minWidth: "8rem" }}
             ></Column>
 
             <Column
@@ -754,6 +791,7 @@ export default function TablePeople() {
               <InputMask
                 id="phone"
                 mask="(99) 9 9999-9999"
+                unmask={true}
                 onChange={(e) => onInputChange(e, "phone")}
                 value={person.phone || ""}
               />

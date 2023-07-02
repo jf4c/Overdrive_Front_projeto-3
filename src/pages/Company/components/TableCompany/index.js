@@ -11,8 +11,10 @@ import { classNames } from "primereact/utils";
 import { InputNumber } from "primereact/inputnumber";
 import { InputMask } from "primereact/inputmask";
 import { Message } from "primereact/message";
+import { locale, addLocale } from "primereact/api";
 
 import { companyInstance } from "~/config/axios.config";
+import { ptBr } from "~/config/ptConfig";
 
 import { CompanyContext } from "~/pages/Company/context/CompanyContext";
 import { useInputChange } from "~/pages/Company/hooks/useInputChange";
@@ -81,7 +83,7 @@ export default function TableCompany() {
   const { emptyCompany, company, setCompany } = useContext(CompanyContext);
   const toast = useRef(null);
 
-  // addLocale("pt", pt);
+  addLocale("pt", ptBr);
 
   //-----CRUD------
   useEffect(() => {

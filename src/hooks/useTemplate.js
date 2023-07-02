@@ -3,6 +3,7 @@ import { Tag } from "primereact/tag";
 
 export const useTemplate = () => {
   const {
+    formatName,
     formatCnpj,
     formatCPF,
     formatRG,
@@ -12,6 +13,10 @@ export const useTemplate = () => {
     getSeverity,
     statusValue,
   } = useFormat();
+
+  const nameBodyTemplate = (rowData) => {
+    return formatName(rowData.name);
+  };
 
   const cnpjBodyTemplate = (rowData) => {
     return formatCnpj(rowData.cnpj);
@@ -39,11 +44,39 @@ export const useTemplate = () => {
     );
   };
 
+  const userBodyTemplate = (rowData) => {
+    const response = () => {
+      if (rowData.user !== null) {
+        return formatPhone(rowData.user);
+      } else {
+        return <Tag value={"sem dado"} severity="warning"></Tag>;
+      }
+    };
+    return response();
+  };
+
   const phoneBodyTemplate = (rowData) => {
-    return formatPhone(rowData.phone);
+    const response = () => {
+      if (rowData.phone !== null) {
+        return formatPhone(rowData.phone);
+      } else {
+        return <Tag value={"sem dado"} severity="warning"></Tag>;
+      }
+    };
+    return response();
+  };
+
+  const companyStatusBodyTemplate = (rowData) => {
+    return (
+      <Tag
+        value={rowData.companyId !== null ? "Com empresa" : "sem empresa"}
+        severity={rowData.companyId !== null && "success"}
+      ></Tag>
+    );
   };
 
   return {
+    nameBodyTemplate,
     cnpjBodyTemplate,
     cpfBodyTemplate,
     rgBodyTemplate,
@@ -51,5 +84,7 @@ export const useTemplate = () => {
     priceBodyTemplate,
     statusBodyTemplate,
     phoneBodyTemplate,
+    userBodyTemplate,
+    companyStatusBodyTemplate,
   };
 };

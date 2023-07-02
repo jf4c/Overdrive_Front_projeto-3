@@ -1,4 +1,10 @@
 export const useFormat = () => {
+  const formatName = (name) => {
+    if (name) {
+      return name;
+    }
+  };
+
   const formatCnpj = (cnpj) => {
     if (cnpj) {
       return cnpj.replace(
@@ -74,6 +80,7 @@ export const useFormat = () => {
   };
 
   return {
+    formatName,
     formatCnpj,
     formatCPF,
     formatPhone,
