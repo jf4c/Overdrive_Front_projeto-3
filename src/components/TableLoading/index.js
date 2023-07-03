@@ -5,7 +5,7 @@ import { Skeleton } from "primereact/skeleton";
 import HeaderTable from "../HeaderTable";
 import { Buttons } from "./styles";
 
-const TableLoading = () => {
+const TableLoading = ({ header }) => {
   const items = Array.from({ length: 5 }, (v, i) => i);
 
   const cellTemplate = () => {
@@ -24,24 +24,14 @@ const TableLoading = () => {
 
   return (
     <DataTable
-      //   onSelectionChange={(e) => setSelectedCompanies(e.value)}
-      // dataKey="id"
-      removableSort
-      //   selectionMode="single"
-      paginator
-      //   globalFilter={globalFilter}
-      header={
-        <HeaderTable
-          name="Empresas"
-          //   filter={(e) => setGlobalFilter(e.target.value)}
-          //   open={openCreateCompany}
-        />
-      }
       value={items}
+      dataKey="id"
+      removableSort
+      header={<HeaderTable name={header} />}
     >
       <Column
         header="Id"
-        field="id"
+        // field="id"
         sortable
         body={cellTemplate}
         style={{ minWidth: "5rem" }}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 
+import { Route, redirect, useNavigate } from "react-router-dom";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Button } from "primereact/button";
@@ -64,6 +65,8 @@ export default function TableCompany() {
     existCep,
   } = useInputChange();
 
+  const navigate = useNavigate();
+
   const [createCompanyDialog, setCreateCompanyDialog] = useState(false);
   const [editCompanyDialog, setEditCompanyDialog] = useState(false);
   const [viewCompanyComplete, setViewCompanyComplete] = useState(false);
@@ -87,13 +90,15 @@ export default function TableCompany() {
 
   //-----CRUD------
   useEffect(() => {
+    setLoading(true);
     companyInstance
-      .get()
+      .get("dfsd")
       .then((res) => {
-        setLoading(true);
         setCompanies(res.data);
       })
-      .catch()
+      .catch((error) => {
+        setErr(true);
+      })
       .finally(() => {
         setLoading(false);
       });
@@ -571,12 +576,27 @@ export default function TableCompany() {
     return "active";
   };
 
+  const emptyData = () => {
+    return (
+      <Message
+        style={{
+          // background: "none",
+          justifyContent: "center ",
+          padding: "5px",
+        }}
+        severity="info"
+        text="Tabela Vazia"
+      />
+    );
+  };
+
   return (
     <div>
+      {err && navigate("/erro")}
       <Toast ref={toast} />
       <BoxTable className="card">
         {loading ? (
-          <TableLoading />
+          <TableLoading header="Empresas" />
         ) : (
           <DataTable
             value={companies}
@@ -592,6 +612,7 @@ export default function TableCompany() {
             paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
             currentPageReportTemplate="Numero de linhas:"
             globalFilter={globalFilter}
+            emptyMessage={emptyData}
             header={
               <HeaderTable
                 name="Empresas"

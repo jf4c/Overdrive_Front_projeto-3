@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 
+import { useNavigate } from "react-router-dom";
+
 import { Column } from "primereact/column";
 import { Button } from "primereact/button";
 import { Toast } from "primereact/toast";
@@ -44,6 +46,7 @@ export default function TablePeople() {
   } = useTemplate();
 
   const { onInputChange } = useInputChange();
+  const navigate = useNavigate();
 
   const [createPersonDialog, setCreatePersonDialog] = useState(false);
   const [editPersonDialog, setEditPersonDialog] = useState(false);
@@ -66,14 +69,15 @@ export default function TablePeople() {
 
   //-----CRUD------
   useEffect(() => {
+    setLoading(true);
     personInstance
       .get()
       .then((res) => {
-        setLoading(true);
-
         setPeople(res.data);
       })
-      .catch()
+      .catch(() => {
+        setErr(true);
+      })
       .finally(() => {
         setLoading(false);
       });
@@ -512,10 +516,11 @@ export default function TablePeople() {
 
   return (
     <div>
+      {err && navigate("/erro")}
       <Toast ref={toast} />
       <BoxTable>
         {loading ? (
-          <TableLoading />
+          <TableLoading header="Pessoas" />
         ) : (
           <Table
             value={people}
