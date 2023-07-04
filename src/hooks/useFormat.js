@@ -1,8 +1,28 @@
 export const useFormat = () => {
   const formatName = (name) => {
     if (name) {
-      return name;
+      const parts = name.split(" ");
+      const firstName = parts[0];
+      let initials = firstName + " ";
+
+      for (let i = 1; i < parts.length - 1; i++) {
+        const part = parts[i];
+        initials += part.charAt(0) + ". ";
+      }
+
+      const lastName = parts[parts.length - 1];
+      initials += lastName;
+
+      return initials;
     }
+  };
+  const formatCompanyName = (fullName) => {
+    if (!fullName) return;
+    if (fullName.length > 30) {
+      const nomesimplificado = fullName.slice(0, 30);
+      return `${nomesimplificado}...`;
+    }
+    return fullName;
   };
 
   const formatCnpj = (cnpj) => {
@@ -89,5 +109,6 @@ export const useFormat = () => {
     formatCurrency,
     getSeverity,
     statusValue,
+    formatCompanyName,
   };
 };

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 
-import { Route, redirect, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Button } from "primereact/button";
@@ -12,7 +12,7 @@ import { classNames } from "primereact/utils";
 import { InputNumber } from "primereact/inputnumber";
 import { InputMask } from "primereact/inputmask";
 import { Message } from "primereact/message";
-import { locale, addLocale } from "primereact/api";
+import { addLocale } from "primereact/api";
 
 import { companyInstance } from "~/config/axios.config";
 import { ptBr } from "~/config/ptConfig";
@@ -55,6 +55,7 @@ export default function TableCompany() {
     dateBodyTemplate,
     priceBodyTemplate,
     statusBodyTemplate,
+    companyNameBodyTemplate,
   } = useTemplate();
 
   const {
@@ -92,7 +93,7 @@ export default function TableCompany() {
   useEffect(() => {
     setLoading(true);
     companyInstance
-      .get("dfsd")
+      .get()
       .then((res) => {
         setCompanies(res.data);
       })
@@ -117,16 +118,17 @@ export default function TableCompany() {
     setSubmitted(true);
     let _company = { ...company };
     let _address = { ...company.address };
+    let _companies = [...companies];
 
     Object.keys(_company).forEach((companyItem, i) => {
       console.log(companyItem);
       if (companyItem !== "address") {
-        if (_company[companyItem] == null) {
+        if (_company[companyItem] === null) {
           _company[companyItem] = "";
         }
       } else {
         Object.keys(_address).forEach((addressItem) => {
-          if (_address[addressItem] == null) {
+          if (_address[addressItem] === null) {
             _address[addressItem] = "";
             _company.address = { ..._address };
           }
@@ -134,6 +136,13 @@ export default function TableCompany() {
       }
       _company = { ..._company };
     });
+
+    const updateTable = (cnpj) => {
+      companyInstance.get(`FindByCNPJ/${cnpj}`).then((res) => {
+        _companies.push({ ...res.data });
+        setCompanies(_companies);
+      });
+    };
 
     if (
       _company.cnpj.length === 14 &&
@@ -146,6 +155,7 @@ export default function TableCompany() {
         .post("", _company)
         .then((res) => {
           console.log("criou");
+          updateTable(res.data.cnpj);
           notification("success", "Concluido", "Empresa criada");
           hideCreateDialog();
         })
@@ -175,7 +185,7 @@ export default function TableCompany() {
     console.log(_company);
 
     const updateEdit = () => {
-      const index = companies.findIndex((c) => c.id == company.id);
+      const index = companies.findIndex((c) => c.id === company.id);
 
       companyInstance.get(`FindByCNPJ/${cnpj}`).then((res) => {
         _companies[index] = { ...res.data };
@@ -188,12 +198,12 @@ export default function TableCompany() {
     Object.keys(_company).forEach((companyItem) => {
       console.log(companyItem);
       if (companyItem !== "address") {
-        if (_company[companyItem] == "") {
+        if (_company[companyItem] === "") {
           _company[companyItem] = null;
         }
       } else {
         Object.keys(_address).forEach((addressItem) => {
-          if (_address[addressItem] == "") {
+          if (_address[addressItem] === "") {
             _address[addressItem] = null;
             _company.address = { ..._address };
           }
@@ -250,9 +260,9 @@ export default function TableCompany() {
 
   const toggleStatus = () => {
     const updateStatus = () => {
-      const index = companies.findIndex((c) => c.id == company.id);
+      const index = companies.findIndex((c) => c.id === company.id);
       let _company = { ...company };
-      if (_company.status == "Active") {
+      if (_company.status === "Active") {
         _company.status = "Inactive";
       } else {
         _company.status = "Active";
@@ -264,12 +274,12 @@ export default function TableCompany() {
     const updateCompanies = () => {
       let _companies = [...companies];
       let _company = { ...company };
-      if (_company.status == "Active") {
+      if (_company.status === "Active") {
         _company.status = "Inactive";
       } else {
         _company.status = "Active";
       }
-      const index = companies.findIndex((c) => c.id == company.id);
+      const index = companies.findIndex((c) => c.id === company.id);
       _company.peoples = [];
       _companies[index] = _company;
       setCompanies(_companies);
@@ -431,7 +441,7 @@ export default function TableCompany() {
         onClick={hideStatusCompanyDialog}
         autoFocus
       />
-      {company.status == "Active" ? (
+      {company.status === "Active" ? (
         <Button
           label="Desativar"
           icon="pi pi-check"
@@ -490,34 +500,34 @@ export default function TableCompany() {
 
   const actionBodyTemplate = (rowData) => {
     const statusSeverity = (data) => {
-      if (data.status == "Active") {
+      if (data.status === "Active") {
         return "danger";
       }
-      if (data.status == "Pending") {
+      if (data.status === "Pending") {
         return "secondary";
       }
       return "success";
     };
 
     const statusIcon = (data) => {
-      if (data.status == "Active") {
+      if (data.status === "Active") {
         return "thumbs-down";
       }
       return "thumbs-up";
     };
 
     const statusDisabled = (data) => {
-      if (data.status == "Pending") {
+      if (data.status === "Pending") {
         return true;
       }
       return false;
     };
 
     const statusTooltip = (data) => {
-      if (data.status == "Active") {
+      if (data.status === "Active") {
         return "Desativa Empresa";
       }
-      if (data.status == "pending") {
+      if (data.status === "pending") {
         return "pendente";
       }
 
@@ -564,7 +574,7 @@ export default function TableCompany() {
           severity="danger"
           onClick={() => openConfirmDeleteCompany(rowData)}
           tooltip="Deletar"
-          disabled={rowData.peoples.length > 0}
+          disabled={rowData.peoples?.length > 0}
           tooltipOptions={configTooltip}
         />
       </ActionTamplate>
@@ -572,7 +582,7 @@ export default function TableCompany() {
   };
 
   const statusChangeHeader = (rowData) => {
-    if (rowData.status == "Active") return "inactive";
+    if (rowData.status === "Active") return "inactive";
     return "active";
   };
 
@@ -600,13 +610,13 @@ export default function TableCompany() {
         ) : (
           <DataTable
             value={companies}
-            onSelectionChange={(e) => setSelectedCompanies(e.value)}
             dataKey="id"
-            removableSort
             selectionMode="single"
             paginator
             scrollable
             scrollHeight="flex"
+            sortField="id"
+            sortOrder={-1}
             rows={10}
             rowsPerPageOptions={[5, 10, 25]}
             paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
@@ -630,6 +640,7 @@ export default function TableCompany() {
             <Column
               header="Nome Empresa"
               field="companyName"
+              body={companyNameBodyTemplate}
               style={{ minWidth: "16rem" }}
             ></Column>
             <Column
@@ -687,6 +698,7 @@ export default function TableCompany() {
                 value={company.companyName || ""}
                 onChange={(e) => onInputChange(e, "companyName")}
                 autoFocus
+                maxLength={100}
               />
               <label htmlFor="companyName">Nome da Empresa</label>
             </span>
@@ -699,6 +711,7 @@ export default function TableCompany() {
                 id="tradingName"
                 value={company.tradingName || ""}
                 onChange={(e) => onInputChange(e, "tradingName")}
+                maxLength={100}
               />
               <label htmlFor="tradingName">Nome Fantazia</label>
             </span>
@@ -885,7 +898,7 @@ export default function TableCompany() {
                 text="Minimo de 7 caracteres."
               />
             )}
-            {existCep == false && (
+            {existCep === false && (
               <Message
                 style={{
                   background: "none",
@@ -981,6 +994,7 @@ export default function TableCompany() {
                 value={company.companyName}
                 onChange={(e) => onInputChange(e, "companyName")}
                 autoFocus
+                maxLength={100}
               />
               <label htmlFor="companyName">Nome da Empresa</label>
             </span>
@@ -992,6 +1006,7 @@ export default function TableCompany() {
               <InputText
                 id="tradingName"
                 value={company.tradingName}
+                maxLength={100}
                 onChange={(e) => onInputChange(e, "tradingName")}
               />
               <label htmlFor="tradingName">Nome Fantazia</label>
@@ -1138,7 +1153,7 @@ export default function TableCompany() {
                 text="Minimo de 7 caracteres."
               />
             )}
-            {existCep == false && (
+            {existCep === false && (
               <Message
                 style={{
                   background: "none",
@@ -1218,7 +1233,7 @@ export default function TableCompany() {
 
       <ViewCompany
         visible={viewCompanyComplete}
-        style={{ width: "35rem" }}
+        style={{ width: "50rem" }}
         breakpoints={{ "960px": "75vw", "641px": "90vw" }}
         header={`Informações da empresa ${company.id}`}
         modal
@@ -1378,7 +1393,7 @@ export default function TableCompany() {
               verticalAlign: "middle",
             }}
           />
-          {company.status == "Active" ? (
+          {company.status === "Active" ? (
             <span>
               Desativar Empresa <b>{company.id}</b>
             </span>

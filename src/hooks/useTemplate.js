@@ -12,7 +12,14 @@ export const useTemplate = () => {
     formatCurrency,
     getSeverity,
     statusValue,
+    formatCompanyName,
   } = useFormat();
+
+  const companyNameBodyTemplate = (rowData) => {
+    const fullName = rowData.companyName;
+
+    return formatCompanyName(rowData.companyName);
+  };
 
   const nameBodyTemplate = (rowData) => {
     return formatName(rowData.name);
@@ -47,7 +54,7 @@ export const useTemplate = () => {
   const userBodyTemplate = (rowData) => {
     const response = () => {
       if (rowData.user !== null) {
-        return formatPhone(rowData.user);
+        return rowData.user;
       } else {
         return <Tag value={"sem dado"} severity="warning"></Tag>;
       }
@@ -86,5 +93,6 @@ export const useTemplate = () => {
     phoneBodyTemplate,
     userBodyTemplate,
     companyStatusBodyTemplate,
+    companyNameBodyTemplate,
   };
 };

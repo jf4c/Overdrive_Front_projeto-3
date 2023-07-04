@@ -81,6 +81,7 @@ export default function TablePeople() {
       .finally(() => {
         setLoading(false);
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const notification = (severity, summary, text) => {
@@ -143,7 +144,7 @@ export default function TablePeople() {
     Object.keys(_person).forEach((personItem) => {
       console.log(personItem);
 
-      if (_person[personItem] == "") {
+      if (_person[personItem] === "") {
         _person[personItem] = null;
       }
 
@@ -151,7 +152,7 @@ export default function TablePeople() {
     });
 
     const updateTable = () => {
-      const index = people.findIndex((p) => p.id == person.id);
+      const index = people.findIndex((p) => p.id === person.id);
       personInstance.get(`FindByCPF/${cpf}`).then((res) => {
         _people[index] = { ...res.data };
         console.log(res.data);
@@ -205,9 +206,9 @@ export default function TablePeople() {
 
   const toggleStatus = () => {
     const updateStatus = () => {
-      const index = people.findIndex((c) => c.id == person.id);
+      const index = people.findIndex((c) => c.id === person.id);
       let _person = { ...person };
-      if (_person.status == "Active") {
+      if (_person.status === "Active") {
         _person.status = "Inactive";
       } else {
         _person.status = "Active";
@@ -217,10 +218,10 @@ export default function TablePeople() {
     };
 
     const updatePeople = () => {
-      const index = people.findIndex((c) => c.id == person.id);
+      const index = people.findIndex((c) => c.id === person.id);
       let _people = [...people];
       let _person = { ...person };
-      if (_person.status == "Active") {
+      if (_person.status === "Active") {
         _person.status = "Inactive";
       } else {
         _person.status = "Active";
@@ -388,7 +389,7 @@ export default function TablePeople() {
         onClick={hideStatuspersonDialog}
         autoFocus
       />
-      {person.status == "Active" ? (
+      {person.status === "Active" ? (
         <Button
           label="Desativar"
           icon="pi pi-check"
@@ -424,34 +425,34 @@ export default function TablePeople() {
 
   const actionBodyTemplate = (rowData) => {
     const statusSeverity = (data) => {
-      if (data.status == "Active") {
+      if (data.status === "Active") {
         return "danger";
       }
-      if (data.status == "Pending") {
+      if (data.status === "Pending") {
         return "secondary";
       }
       return "success";
     };
 
     const statusIcon = (data) => {
-      if (data.status == "Active") {
+      if (data.status === "Active") {
         return "thumbs-down";
       }
       return "thumbs-up";
     };
 
     const statusDisabled = (data) => {
-      if (data.status == "Pending") {
+      if (data.status === "Pending") {
         return true;
       }
       return false;
     };
 
     const statusTooltip = (data) => {
-      if (data.status == "Active") {
+      if (data.status === "Active") {
         return "Desativa Empresa";
       }
-      if (data.status == "pending") {
+      if (data.status === "pending") {
         return "pendente";
       }
 
@@ -480,7 +481,7 @@ export default function TablePeople() {
         <Button
           icon="pi pi-building"
           rounded
-          disabled={rowData.status != "Active"}
+          disabled={rowData.status !== "Active"}
           onClick={() => openCompanyList(rowData)}
           tooltip="Company"
           tooltipOptions={configTooltip}
@@ -510,8 +511,22 @@ export default function TablePeople() {
   };
 
   const statusChangeHeader = (rowData) => {
-    if (rowData.status == "Active") return "inactive";
+    if (rowData.status === "Active") return "inactive";
     return "active";
+  };
+
+  const emptyData = () => {
+    return (
+      <Message
+        style={{
+          // background: "none",
+          justifyContent: "center ",
+          padding: "5px",
+        }}
+        severity="info"
+        text="Tabela Vazia"
+      />
+    );
   };
 
   return (
@@ -524,11 +539,11 @@ export default function TablePeople() {
         ) : (
           <Table
             value={people}
-            // loading={loading}
             // selection={selectedpeople}
-            onSelectionChange={(e) => setSelectedpeople(e.value)}
+            // onSelectionChange={(e) => setSelectedpeople(e.value)}
             dataKey="id"
-            removableSort
+            sortField="id"
+            sortOrder={-1}
             selectionMode="single"
             paginator
             rows={10}
@@ -538,6 +553,7 @@ export default function TablePeople() {
             paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
             currentPageReportTemplate="Numero de linhas:"
             globalFilter={globalFilter}
+            emptyMessage={emptyData}
             header={
               <HeaderTable
                 name="Pessoas"
@@ -630,6 +646,7 @@ export default function TablePeople() {
                 value={person.name || ""}
                 onChange={(e) => onInputChange(e, "name")}
                 autoFocus
+                maxLength={100}
                 className={classNames({
                   "p-invalid": submitted && !person.name,
                 })}
@@ -654,6 +671,7 @@ export default function TablePeople() {
             <span className="p-float-label">
               <InputText
                 id="user"
+                maxLength={100}
                 value={person.user || ""}
                 onChange={(e) => onInputChange(e, "user")}
               />
@@ -731,6 +749,7 @@ export default function TablePeople() {
               <InputMask
                 id="phone"
                 mask="(99) 9 9999-9999"
+                unmask={true}
                 onChange={(e) => onInputChange(e, "phone")}
                 value={person.phone || ""}
               />
@@ -860,7 +879,7 @@ export default function TablePeople() {
               verticalAlign: "middle",
             }}
           />
-          {person.status == "Active" ? (
+          {person.status === "Active" ? (
             <span>
               Desativar Pessoa <b>{person.id}</b>
             </span>

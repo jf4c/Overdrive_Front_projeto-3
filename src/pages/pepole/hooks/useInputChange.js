@@ -5,12 +5,13 @@ export const useInputChange = () => {
   const { person, setPerson } = useContext(PersonContext);
 
   const onInputChange = (e, name) => {
-    const val = (e.target && e.target.value) || "";
+    let val = (e.target && e.target.value) || "";
+    if (name === "user") {
+      val = val.replace(/\s/g, "");
+    }
 
     let _person = { ...person };
-
     _person[`${name}`] = val;
-
     setPerson(_person);
   };
 
