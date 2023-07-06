@@ -1,7 +1,14 @@
+import { Tag } from "primereact/tag";
+
 export const useFormat = () => {
+  const formatEmptyData = (data) => {
+    if (data) return data;
+    return <Tag value={"sem dado"} severity="warning"></Tag>;
+  };
+
   const formatName = (name) => {
-    if (name) {
-      const parts = name.split(" ");
+    const parts = name.split(" ");
+    if (name && parts.length > 1) {
       const firstName = parts[0];
       let initials = firstName + " ";
 
@@ -15,6 +22,7 @@ export const useFormat = () => {
 
       return initials;
     }
+    return name;
   };
   const formatCompanyName = (fullName) => {
     if (!fullName) return;
@@ -100,6 +108,7 @@ export const useFormat = () => {
   };
 
   return {
+    formatEmptyData,
     formatName,
     formatCnpj,
     formatCPF,

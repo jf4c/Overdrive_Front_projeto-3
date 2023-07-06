@@ -11,6 +11,7 @@ export const FooterBox = styled("footer", {
   justifyContent: "center",
   alignItems: "center",
   bottom: "0px",
-  backgroundColor: "#34f256",
+  backgroundColor: "$grey800",
   fontSize: "1rem",
+  color: "$grey200",
 });

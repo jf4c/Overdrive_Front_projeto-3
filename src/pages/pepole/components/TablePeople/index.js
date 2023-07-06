@@ -539,8 +539,6 @@ export default function TablePeople() {
         ) : (
           <Table
             value={people}
-            // selection={selectedpeople}
-            // onSelectionChange={(e) => setSelectedpeople(e.value)}
             dataKey="id"
             sortField="id"
             sortOrder={-1}

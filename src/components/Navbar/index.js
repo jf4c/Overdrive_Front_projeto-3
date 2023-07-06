@@ -5,7 +5,7 @@ import { Nav, Title, Ul, Li } from "./styles";
 const Navbar = () => {
   return (
     <Nav>
-      <Title>Page</Title>
+      <Title>Logo</Title>
       <Ul>
         <Li>
           <NavLink to="/"> Home </NavLink>

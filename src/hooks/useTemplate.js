@@ -3,6 +3,7 @@ import { Tag } from "primereact/tag";
 
 export const useTemplate = () => {
   const {
+    formatEmptyData,
     formatName,
     formatCnpj,
     formatCPF,
@@ -16,11 +17,8 @@ export const useTemplate = () => {
   } = useFormat();
 
   const companyNameBodyTemplate = (rowData) => {
-    const fullName = rowData.companyName;
-
-    return formatCompanyName(rowData.companyName);
+    return formatEmptyData(formatCompanyName(rowData.companyName));
   };
-
   const nameBodyTemplate = (rowData) => {
     return formatName(rowData.name);
   };
@@ -42,7 +40,7 @@ export const useTemplate = () => {
   };
 
   const priceBodyTemplate = (rowData) => {
-    return formatCurrency(rowData.financeCapital);
+    return formatEmptyData(formatCurrency(rowData.financeCapital));
   };
 
   const statusBodyTemplate = (rowData) => {
@@ -52,25 +50,11 @@ export const useTemplate = () => {
   };
 
   const userBodyTemplate = (rowData) => {
-    const response = () => {
-      if (rowData.user !== null) {
-        return rowData.user;
-      } else {
-        return <Tag value={"sem dado"} severity="warning"></Tag>;
-      }
-    };
-    return response();
+    return formatEmptyData(rowData.user);
   };
 
   const phoneBodyTemplate = (rowData) => {
-    const response = () => {
-      if (rowData.phone !== null) {
-        return formatPhone(rowData.phone);
-      } else {
-        return <Tag value={"sem dado"} severity="warning"></Tag>;
-      }
-    };
-    return response();
+    return formatEmptyData(formatPhone(rowData.phone));
   };
 
   const companyStatusBodyTemplate = (rowData) => {

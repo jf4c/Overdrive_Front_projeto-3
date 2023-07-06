@@ -25,6 +25,7 @@ import HeaderTable from "~/components/HeaderTable";
 import TableLoading from "~/components/TableLoading";
 
 import { useTemplate } from "~/hooks/useTemplate";
+import { useFormat } from "~/hooks/useFormat";
 
 import {
   ActionTamplate,
@@ -50,6 +51,7 @@ import {
 } from "./styles";
 
 export default function TableCompany() {
+  const { formatEmptyData } = useFormat();
   const {
     cnpjBodyTemplate,
     dateBodyTemplate,
@@ -213,7 +215,10 @@ export default function TableCompany() {
     });
 
     if (
-      // _company.cnpj.length === 14 &&
+      _company.companyName &&
+      _company.tradingName &&
+      _company.legalNature &&
+      _company.financeCapital &&
       _company.openingDate !== null &&
       _company.cnae?.length === 7 &&
       _address.cep?.length === 8 &&
@@ -995,9 +1000,24 @@ export default function TableCompany() {
                 onChange={(e) => onInputChange(e, "companyName")}
                 autoFocus
                 maxLength={100}
+                required
+                className={classNames({
+                  "p-invalid": submitted && !company.companyName,
+                })}
               />
               <label htmlFor="companyName">Nome da Empresa</label>
             </span>
+            {submitted && !company.companyName && (
+              <Message
+                style={{
+                  background: "none",
+                  justifyContent: "start",
+                  padding: "5px",
+                }}
+                severity="error"
+                text="Nome da empresa é obrigatório."
+              />
+            )}
           </InputContainer>
 
           {/* tradingName */}
@@ -1008,9 +1028,24 @@ export default function TableCompany() {
                 value={company.tradingName}
                 maxLength={100}
                 onChange={(e) => onInputChange(e, "tradingName")}
+                required
+                className={classNames({
+                  "p-invalid": submitted && !company.tradingName,
+                })}
               />
               <label htmlFor="tradingName">Nome Fantazia</label>
             </span>
+            {submitted && !company.tradingName && (
+              <Message
+                style={{
+                  background: "none",
+                  justifyContent: "start",
+                  padding: "5px",
+                }}
+                severity="error"
+                text="Nome fantasia é obrigatório."
+              />
+            )}
           </InputContainer>
 
           {/* openingDate */}
@@ -1050,10 +1085,24 @@ export default function TableCompany() {
                 id="legalNature"
                 value={company.legalNature}
                 onChange={(e) => onInputChange(e, "legalNature")}
-                // autoFocus
+                required
+                className={classNames({
+                  "p-invalid": submitted && !company.legalNature,
+                })}
               />
               <label htmlFor="legalNature">Naturesa legal</label>
             </span>
+            {submitted && !company.legalNature && (
+              <Message
+                style={{
+                  background: "none",
+                  justifyContent: "start",
+                  padding: "5px",
+                }}
+                severity="error"
+                text="Natureza Legal é obrigatória."
+              />
+            )}
           </InputContainer>
 
           {/* cnae */}
@@ -1105,16 +1154,30 @@ export default function TableCompany() {
                 mode="currency"
                 currency="BRL"
                 locale="pt-RS"
+                required
+                className={classNames({
+                  "p-invalid": submitted && !company.financeCapital,
+                })}
               />
               <label htmlFor="financeCapital">Capital Financeiro</label>
             </span>
+            {submitted && !company.financeCapital && (
+              <Message
+                style={{
+                  background: "none",
+                  justifyContent: "start",
+                  padding: "5px",
+                }}
+                severity="error"
+                text="Capital Financeiro é obrigatório."
+              />
+            )}
           </InputContainer>
         </Company>
 
         <Address>
           <legend>Endereço da Empresa</legend>
           {/* cep */}
-
           <InputContainer className="cep">
             <span className="p-float-label">
               <InputMask
@@ -1245,12 +1308,12 @@ export default function TableCompany() {
           <TabPanel header={companyHeader}>
             <ViewData>
               <TextData
-                data={company.companyName}
+                data={formatEmptyData(company.companyName)}
                 name="Nome Da empresa"
                 className="companyName"
               />
               <TextData
-                data={company.tradingName}
+                data={formatEmptyData(company.tradingName)}
                 name="Nome Fantazia"
                 className="tradingName"
               />
@@ -1268,7 +1331,7 @@ export default function TableCompany() {
               <TextData data={company.cnae} name="CNAE" className="cnae" />
 
               <TextData
-                data={company.legalNature}
+                data={formatEmptyData(company.legalNature)}
                 name="Natureza Legal"
                 className="legalNature"
               />
@@ -1279,7 +1342,7 @@ export default function TableCompany() {
                 className="openingDate"
               />
               <TextData
-                data={priceBodyTemplate(company)}
+                data={formatEmptyData(priceBodyTemplate(company))}
                 name="Capital Financeiro"
                 className="financeCapital"
               />
