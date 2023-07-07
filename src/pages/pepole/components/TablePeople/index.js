@@ -99,6 +99,16 @@ export default function TablePeople() {
     let _people = [...people];
     let _person = { ...person };
 
+    Object.keys(_person).forEach((personItem) => {
+      console.log(personItem);
+
+      if (_person[personItem] === "") {
+        _person[personItem] = null;
+      }
+
+      _person = { ..._person };
+    });
+
     const updateTable = (cpf) => {
       personInstance.get(`FindByCPF/${cpf}`).then((res) => {
         _people.push({ ...res.data });
@@ -160,7 +170,7 @@ export default function TablePeople() {
       });
     };
 
-    if (_person.name) {
+    if (_person.name && _person.user && _person.phone) {
       personInstance
         .put("", _person)
         .then((res) => {
@@ -776,6 +786,7 @@ export default function TablePeople() {
                 value={person.name || ""}
                 onChange={(e) => onInputChange(e, "name")}
                 autoFocus
+                required
                 className={classNames({
                   "p-invalid": submitted && !person.name,
                 })}
@@ -802,9 +813,24 @@ export default function TablePeople() {
                 id="user"
                 value={person.user || ""}
                 onChange={(e) => onInputChange(e, "user")}
+                required
+                className={classNames({
+                  "p-invalid": submitted && !person.user,
+                })}
               />
               <label htmlFor="user">User</label>
             </span>
+            {submitted && !person.user && (
+              <Message
+                style={{
+                  background: "none",
+                  justifyContent: "start",
+                  padding: "5px",
+                }}
+                severity="error"
+                text="O user é obrigatorio"
+              />
+            )}
           </InputContainer>
 
           {/* tel */}
@@ -816,16 +842,31 @@ export default function TablePeople() {
                 unmask={true}
                 onChange={(e) => onInputChange(e, "phone")}
                 value={person.phone || ""}
+                required
+                className={classNames({
+                  "p-invalid": submitted && !person.phone,
+                })}
               />
               <label htmlFor="phone">Telefone</label>
             </span>
+            {submitted && !person.phone && (
+              <Message
+                style={{
+                  background: "none",
+                  justifyContent: "start",
+                  padding: "5px",
+                }}
+                severity="error"
+                text="O telefone é obrigatorio"
+              />
+            )}
           </InputContainer>
         </Person>
       </EditPerson>
 
       <CompanyListDialog
         visible={companyListDialog}
-        style={{ width: "50rem" }}
+        style={{ width: "60rem" }}
         breakpoints={{ "960px": "75vw", "641px": "90vw" }}
         header={`Informações da empresa ${person.id}`}
         modal

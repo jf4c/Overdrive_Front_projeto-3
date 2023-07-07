@@ -189,20 +189,20 @@ export const ViewCompany = styled("div", {
   },
   "& .legalNature": {
     gridColumnStart: "2",
-    gridColumnEnd: "3",
-  },
-
-  "& .cnpj": {
-    gridColumnStart: "3",
-    gridColumnEnd: "5",
+    gridColumnEnd: "4",
   },
 
   "& .openingDate": {
-    gridColumnStart: "5",
+    gridColumnStart: "4",
     gridColumnEnd: "6",
   },
   "& .financeCapital": {
     gridColumnStart: "1",
+    gridColumnEnd: "4",
+  },
+
+  "& .cnpj": {
+    gridColumnStart: "4",
     gridColumnEnd: "6",
   },
 });

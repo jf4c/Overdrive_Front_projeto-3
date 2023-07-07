@@ -39,6 +39,9 @@ const CompanyList = ({ value }) => {
     formatCurrency,
     formatCPF,
     formatRG,
+    formatCompanyName,
+    formatName,
+    formatPhone,
   } = useFormat();
 
   const [addPeopleInCompanyDialog, setAddPeopleInCompanyDialog] =
@@ -163,6 +166,7 @@ const CompanyList = ({ value }) => {
   );
 
   const companyList = (company) => {
+    if (company.status !== "Active") return;
     return (
       <Container>
         <Company>
@@ -170,7 +174,7 @@ const CompanyList = ({ value }) => {
           <CompanyInfo>
             <Name>
               <label htmlFor="">Nome:</label>
-              <span>{company.companyName}</span>
+              <span>{formatCompanyName(company.companyName)}</span>
             </Name>
             <CNPJ>
               <label htmlFor="">CNPJ:</label>
@@ -200,7 +204,7 @@ const CompanyList = ({ value }) => {
             <div className="info">
               <TextView>
                 <label htmlFor="">Nome:</label>
-                <span>{person.name}</span>
+                <span>{formatName(person.name)}</span>
               </TextView>
               <TextView>
                 <label htmlFor="">CPF:</label>
@@ -212,7 +216,7 @@ const CompanyList = ({ value }) => {
               </TextView>
               <TextView>
                 <label htmlFor="">Telefone:</label>
-                <span>{person.phone}</span>
+                <span>{formatPhone(person.phone)}</span>
               </TextView>
             </div>
 
@@ -230,13 +234,13 @@ const CompanyList = ({ value }) => {
             <h3>Empresa</h3>
             <TextData
               icon="pi-briefcase"
-              data={person.company.companyName}
+              data={formatCompanyName(person.company.companyName)}
               name="Nome Da empresa"
               className="companyName"
             />
             <TextData
               data={person.company.tradingName}
-              name="Nome Fantazia"
+              name="Nome Fantasia"
               className="tradingName"
             />
             <TextData data={person.company.cnae} name="CNAE" className="cnae" />
@@ -245,12 +249,6 @@ const CompanyList = ({ value }) => {
               data={person.company.legalNature}
               name="Natureza Legal"
               className="legalNature"
-            />
-            <TextData
-              icon="pi-building"
-              data={formatCnpj(person.company.cnpj)}
-              name="CNPJ"
-              className="cnpj"
             />
 
             <TextData
@@ -265,6 +263,12 @@ const CompanyList = ({ value }) => {
               data={formatCurrency(person.company.financeCapital)}
               name="Capital Financeiro"
               className="financeCapital"
+            />
+            <TextData
+              icon="pi-building"
+              data={formatCnpj(person.company.cnpj)}
+              name="CNPJ"
+              className="cnpj"
             />
           </ViewCompany>
         </ViewData>

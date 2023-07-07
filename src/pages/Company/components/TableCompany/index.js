@@ -123,15 +123,14 @@ export default function TableCompany() {
     let _companies = [...companies];
 
     Object.keys(_company).forEach((companyItem, i) => {
-      console.log(companyItem);
       if (companyItem !== "address") {
-        if (_company[companyItem] === null) {
-          _company[companyItem] = "";
+        if (_company[companyItem] === "") {
+          _company[companyItem] = null;
         }
       } else {
         Object.keys(_address).forEach((addressItem) => {
-          if (_address[addressItem] === null) {
-            _address[addressItem] = "";
+          if (_address[addressItem] === "") {
+            _address[addressItem] = null;
             _company.address = { ..._address };
           }
         });
@@ -147,22 +146,24 @@ export default function TableCompany() {
     };
 
     if (
-      _company.cnpj.length === 14 &&
-      _company.openingDate !== "" &&
-      _company.cnae.length === 7 &&
-      _address.cep.length === 8 &&
-      _address.number !== ""
+      _company.cnpj?.length === 14 &&
+      _company.openingDate &&
+      _company.cnae?.length === 7 &&
+      _address.cep?.length === 8 &&
+      _address.number &&
+      _address.street &&
+      _address.bairro &&
+      _address.number &&
+      _address.city
     ) {
       companyInstance
         .post("", _company)
         .then((res) => {
-          console.log("criou");
           updateTable(res.data.cnpj);
           notification("success", "Concluido", "Empresa criada");
           hideCreateDialog();
         })
         .catch((err) => {
-          console.log(err.response.data);
           notification("error", "Erro", err.response.data.split(":")[1]);
         })
         .finally(() => {
@@ -184,21 +185,17 @@ export default function TableCompany() {
     delete _company.cnpj;
     delete _company.status;
 
-    console.log(_company);
-
     const updateEdit = () => {
       const index = companies.findIndex((c) => c.id === company.id);
 
       companyInstance.get(`FindByCNPJ/${cnpj}`).then((res) => {
         _companies[index] = { ...res.data };
-        console.log(res.data);
         // notification("success", "Concluido", "A empresa foi editada");
         setCompanies(_companies);
       });
     };
 
     Object.keys(_company).forEach((companyItem) => {
-      console.log(companyItem);
       if (companyItem !== "address") {
         if (_company[companyItem] === "") {
           _company[companyItem] = null;
@@ -219,10 +216,13 @@ export default function TableCompany() {
       _company.tradingName &&
       _company.legalNature &&
       _company.financeCapital &&
-      _company.openingDate !== null &&
+      _company.openingDate &&
       _company.cnae?.length === 7 &&
       _address.cep?.length === 8 &&
-      _address.number !== null
+      _address.street &&
+      _address.bairro &&
+      _address.number &&
+      _address.city
     ) {
       companyInstance
         .put("", _company)
@@ -232,7 +232,6 @@ export default function TableCompany() {
           hideEditDialog();
         })
         .catch((err) => {
-          console.log(err.response.data);
           notification("error", "Erro", err.response.data.split(":")[1]);
         })
         .finally(() => {
@@ -241,8 +240,6 @@ export default function TableCompany() {
     } else {
       notification("error", "Erro", "Não foi possivel editar a empresa");
     }
-
-    console.log(_company);
   };
 
   const deleteCompany = () => {
@@ -273,7 +270,6 @@ export default function TableCompany() {
         _company.status = "Active";
       }
       companies[index] = _company;
-      console.log(companies);
     };
 
     const updateCompanies = () => {
@@ -296,15 +292,14 @@ export default function TableCompany() {
         updateStatus();
         notification("success", "Concluido", "Status Alterado");
       })
-      .then(() => {
-        if (company.peoples.length > 0) {
+      .then((res) => {
+        if (company.peoples?.length > 0) {
           notification(
             "info",
             "Atençao",
             "pessoa(as) foram retiradas da empresa"
           );
           updateCompanies();
-          console.log(company);
         }
       })
       .catch((err) => {
@@ -319,7 +314,6 @@ export default function TableCompany() {
   //----Open_Dialog-------
   const openCreateCompany = () => {
     setCompany(emptyCompany);
-    console.log(company.cnpj === null ? "" : company.cnpj);
     setSubmitted(false);
     setCreateCompanyDialog(true);
   };
@@ -329,7 +323,6 @@ export default function TableCompany() {
     let _company = { ...company };
 
     _company.openingDate = date;
-    console.log(company);
     setCompany(_company);
     setSubmitted(false);
     setEditCompanyDialog(true);
@@ -718,7 +711,7 @@ export default function TableCompany() {
                 onChange={(e) => onInputChange(e, "tradingName")}
                 maxLength={100}
               />
-              <label htmlFor="tradingName">Nome Fantazia</label>
+              <label htmlFor="tradingName">Nome Fantasia</label>
             </span>
           </InputContainer>
 
@@ -923,10 +916,24 @@ export default function TableCompany() {
                 id="street"
                 value={company.address.street || ""}
                 onChange={(e) => onInputAddressChange(e, "street")}
+                required
+                className={classNames({
+                  "p-invalid": submitted && company.address.street === null,
+                })}
               />
-
               <label htmlFor="street">Rua</label>
             </span>
+            {submitted && !company.address.street && (
+              <Message
+                style={{
+                  background: "none",
+                  justifyContent: "start",
+                  padding: "5px",
+                }}
+                severity="error"
+                text="Rua é obrigatório."
+              />
+            )}
           </InputContainer>
 
           <InputContainer className="number">
@@ -962,9 +969,24 @@ export default function TableCompany() {
                 id="bairro"
                 value={company.address.bairro || ""}
                 onChange={(e) => onInputAddressChange(e, "bairro")}
+                required
+                className={classNames({
+                  "p-invalid": submitted && company.address.bairro === null,
+                })}
               />
               <label htmlFor="bairro">Bairro</label>
             </span>
+            {submitted && !company.address.bairro && (
+              <Message
+                style={{
+                  background: "none",
+                  justifyContent: "start",
+                  padding: "5px",
+                }}
+                severity="error"
+                text="bairro é obrigatório."
+              />
+            )}
           </InputContainer>
 
           <InputContainer className="city">
@@ -973,9 +995,24 @@ export default function TableCompany() {
                 id="city"
                 value={company.address.city || ""}
                 onChange={(e) => onInputAddressChange(e, "city")}
+                required
+                className={classNames({
+                  "p-invalid": submitted && company.address.city === null,
+                })}
               />
               <label htmlFor="city">Cidade</label>
             </span>
+            {submitted && !company.address.city && (
+              <Message
+                style={{
+                  background: "none",
+                  justifyContent: "start",
+                  padding: "5px",
+                }}
+                severity="error"
+                text="cidade é obrigatório."
+              />
+            )}
           </InputContainer>
         </Address>
       </CreateCompany>
@@ -1033,7 +1070,7 @@ export default function TableCompany() {
                   "p-invalid": submitted && !company.tradingName,
                 })}
               />
-              <label htmlFor="tradingName">Nome Fantazia</label>
+              <label htmlFor="tradingName">Nome Fantasia</label>
             </span>
             {submitted && !company.tradingName && (
               <Message
@@ -1189,7 +1226,7 @@ export default function TableCompany() {
                 onChange={(e) => onChangeCep(e)}
                 required
                 className={classNames({
-                  "p-invalid": submitted && company.address.cep === null,
+                  "p-invalid": submitted && !company.address.cep,
                 })}
               />
               <label htmlFor="cep">CEP</label>
@@ -1236,12 +1273,28 @@ export default function TableCompany() {
                 id="street"
                 value={company.address.street}
                 onChange={(e) => onInputAddressChange(e, "street")}
+                required
+                className={classNames({
+                  "p-invalid": submitted && !company.address.street,
+                })}
               />
 
               <label htmlFor="street">Rua</label>
             </span>
+            {submitted && !company.address.street && (
+              <Message
+                style={{
+                  background: "none",
+                  justifyContent: "start",
+                  padding: "5px",
+                }}
+                severity="error"
+                text="Rua é obrigatório."
+              />
+            )}
           </InputContainer>
 
+          {/* Number */}
           <InputContainer className="number">
             <span className="p-float-label">
               <InputNumber
@@ -1275,9 +1328,24 @@ export default function TableCompany() {
                 id="bairro"
                 value={company.address.bairro}
                 onChange={(e) => onInputAddressChange(e, "bairro")}
+                required
+                className={classNames({
+                  "p-invalid": submitted && !company.address.bairro,
+                })}
               />
               <label htmlFor="bairro">Bairro</label>
             </span>
+            {submitted && !company.address.bairro && (
+              <Message
+                style={{
+                  background: "none",
+                  justifyContent: "start",
+                  padding: "5px",
+                }}
+                severity="error"
+                text="Bairro é obrigatório."
+              />
+            )}
           </InputContainer>
 
           {/* city */}
@@ -1287,9 +1355,24 @@ export default function TableCompany() {
                 id="city"
                 value={company.address.city}
                 onChange={(e) => onInputAddressChange(e, "city")}
+                required
+                className={classNames({
+                  "p-invalid": submitted && !company.address.city,
+                })}
               />
               <label htmlFor="city">Cidade</label>
             </span>
+            {submitted && !company.address.city && (
+              <Message
+                style={{
+                  background: "none",
+                  justifyContent: "start",
+                  padding: "5px",
+                }}
+                severity="error"
+                text="cidade é obrigatório."
+              />
+            )}
           </InputContainer>
         </Address>
       </EditCompany>
@@ -1314,7 +1397,7 @@ export default function TableCompany() {
               />
               <TextData
                 data={formatEmptyData(company.tradingName)}
-                name="Nome Fantazia"
+                name="Nome Fantasia"
                 className="tradingName"
               />
               <TextData
@@ -1383,7 +1466,7 @@ export default function TableCompany() {
             ) : (
               <PersonContainer>
                 {people.map((person, i) => (
-                  <Person>
+                  <Person key={person.id}>
                     <Avatar icon="pi pi-user" shape="circle" />
                     <div>
                       <PersonData>

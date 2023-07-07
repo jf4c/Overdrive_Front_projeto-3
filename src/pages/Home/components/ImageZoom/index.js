@@ -22,8 +22,8 @@ const ImageZoom = ({ id, src, alt, text, tools }) => {
         />
         <ToolList className="toolList">
           {tools &&
-            tools.map((e) => {
-              return <Tool>{e}</Tool>;
+            tools.map((e, i) => {
+              return <Tool key={i}>{e}</Tool>;
             })}
         </ToolList>
       </ViewInfo>
